@@ -21,19 +21,31 @@
 #include <memory.h>
 
 /**
- * Create a new image buffer
- * @param[in] pixel_format The pixel format the image is in
+ * @brief Create a new image buffer
+ *
+ * This will create a new image buffer based on the pixel format supplied and the image width
+ * and height.
+ * @param[in] pixel_format The pixel format for the image
  * @param[in] width The width in pixels
  * @param[in] height The height in pixels
  */
 ImageBuffer::ImageBuffer(enum pixel_formats pixel_format, uint32_t width, uint32_t height) {
-  this->pixel_format = pixel_format;
-  this->width = width;
-  this->height = height;
-  this->size = Image::getSize();
-  this->data = malloc(this->size);
+    this->pixel_format = pixel_format;
+    this->width = width;
+    this->height = height;
+    this->size = Image::getSize();
+    this->data = malloc(this->size);
 }
 
+/**
+ * @brief Create a new image buffer
+ *
+ * This will create a new image with a specific buffer size.
+ * @param[in] pixel_format The pixel format for the image
+ * @param[in] width The width in pixels
+ * @param[in] height The height in pixels
+ * @param[in] size The buffer size in bytes
+ */
 ImageBuffer::ImageBuffer(enum pixel_formats pixel_format, uint32_t width, uint32_t height, uint32_t size) {
     this->pixel_format = pixel_format;
     this->width = width;
@@ -42,6 +54,15 @@ ImageBuffer::ImageBuffer(enum pixel_formats pixel_format, uint32_t width, uint32
     this->data = malloc(this->size);
 }
 
+/**
+ * @brief Create a new image buffer
+ *
+ * This will create a new image pased on a byte vector.
+ * @param[in] pixel_format The pixel format for the image
+ * @param[in] width The width in pixels
+ * @param[in] height The height in pixels
+ * @param[in] img The input byte buffer
+ */
 ImageBuffer::ImageBuffer(enum pixel_formats pixel_format, uint32_t width, uint32_t height, std::vector<uint8_t> img) {
     this->pixel_format = pixel_format;
     this->width = width;
@@ -51,13 +72,21 @@ ImageBuffer::ImageBuffer(enum pixel_formats pixel_format, uint32_t width, uint32
     memcpy(this->data, img.data(), this->size);
 }
 
+/**
+ * @brief Get the amount of bytes
+ *
+ * This will return the full image size in bytes.
+ * @return The full image size in bytes
+ */
 uint32_t ImageBuffer::getSize(void) {
     return this->size;
 }
 
 /**
- * Destroy the image
+ * @brief Destroy the image
+ *
+ * This will free the allocated memory of the buffer.
  */
 ImageBuffer::~ImageBuffer(void) {
-  free(this->data);
+    free(this->data);
 }

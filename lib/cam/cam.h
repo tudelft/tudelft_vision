@@ -16,29 +16,35 @@
  */
 
 #include "vision/image.h"
-#include <memory>
 
 #ifndef CAM_CAM_H_
 #define CAM_CAM_H_
 
+/**
+ * @brief Abstract camera
+ *
+ * This class should not be initialized by itself as it only containts an abstract
+ * decleration of a Camera.
+ */
 class Cam {
   protected:
-    unsigned int width, height;	              ///< The output width and height
-    enum Image::pixel_formats pixel_format;   ///< The output pixel format
+    uint32_t width;                             ///< The output width in pixels
+    uint32_t height;                            ///< The output height in pixels
+    enum Image::pixel_formats pixel_format;     ///< The output pixel format
 
   public:
     virtual void start(void) = 0;
     virtual void stop(void) = 0;
-    virtual std::shared_ptr<Image> getImage(void) = 0;
+    virtual Image::Ptr getImage(void) = 0;
 
     /* Settings */
-    void setOutput(enum Image::pixel_formats format, uint32_t width, uint32_t height);
-    void setCrop(uint32_t left, uint32_t top, uint32_t width, uint32_t height);
+    virtual void setOutput(enum Image::pixel_formats format, uint32_t width, uint32_t height) = 0;
+    virtual void setCrop(uint32_t left, uint32_t top, uint32_t width, uint32_t height) = 0;
 
     /* Usefull getters */
-    unsigned int getWidth(void) { return width; };
-    unsigned int getHeight(void) { return height; };
-    enum Image::pixel_formats getFormat(void) { return pixel_format; };
+    unsigned int getWidth(void);
+    unsigned int getHeight(void);
+    enum Image::pixel_formats getFormat(void);
 };
 
 #endif /* CAM_CAM_H_ */

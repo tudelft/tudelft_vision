@@ -15,26 +15,34 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "image.h"
-#include "cam/cam_linux.h"
-
-#ifndef VISION_IMAGE_V4L2_H_
-#define VISION_IMAGE_V4L2_H_
+#include "cam.h"
 
 /**
- * @brief Image based on a V4L2 buffer
+ * @brief Get the camera output width
  *
- * This is an image based on a V4L2 memory mapped buffer. These images should only be created
- * by the Linux Camera. At deconstruction it will automatically enqueue the V4L2 buffer.
+ * This returns the camera output width in pixels.
+ * @return The camera output width in pixels
  */
-class ImageV4L2: public Image {
-  private:
-    CamLinux *cam;
-    uint16_t buffer_index;
+unsigned int Cam::getWidth(void) {
+    return width;
+}
 
-  public:
-    ImageV4L2(CamLinux *cam, uint16_t buffer_index, void *data);
-    ~ImageV4L2(void);
-};
+/**
+ * @brief Get the camera output height
+ *
+ * This returns the camera output height in pixels.
+ * @return The camera output height in pixels
+ */
+unsigned int Cam::getHeight(void) {
+    return height;
+}
 
-#endif /* VISION_IMAGE_V4L2_H_ */
+/**
+ * @brief Get the camera output format
+ *
+ * This will return the camera output format. An example of such a format is YUYV, UYVY etc.
+ * @return The camera output format (pixel information)
+ */
+enum Image::pixel_formats Cam::getFormat(void) {
+    return pixel_format;
+}

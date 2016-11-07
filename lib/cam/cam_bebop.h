@@ -23,18 +23,24 @@
 #ifndef CAM_BEBOP_H_
 #define CAM_BEBOP_H_
 
+/**
+ * @brief Bebop Front Camera
+ *
+ * This is a full driver for the Bebop front camera. It is baed on the Linux camera and extends it
+ * by configurations for the MT9F002 CMOS chipset and ISP.
+ */
 class CamBebop: public CamLinux {
   private:
-    I2CBus i2c_bus;
-    struct MT9F002::pll_config_t pll_config;
-    MT9F002 mt9f002;
-    ISP isp;
+    I2CBus i2c_bus;                             ///< The I2C bus connection on which the MT9F002 is connected
+    struct MT9F002::pll_config_t pll_config;    ///< PLL configuration for the MT9F002
+    MT9F002 mt9f002;                            ///< MT9F002 driver
+    ISP isp;                                    ///< ISP driver
 
   public:
     CamBebop(void);
 
-    void start(void); ///< Start the camera streaming
-    void setOutput(enum Image::pixel_formats format, uint32_t width, uint32_t height);  ///< Set output format
+    void start(void);
+    void setOutput(enum Image::pixel_formats format, uint32_t width, uint32_t height);
     void setCrop(uint32_t left, uint32_t top, uint32_t width, uint32_t height);
 };
 

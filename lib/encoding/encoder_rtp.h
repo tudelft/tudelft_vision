@@ -17,14 +17,26 @@
 
 #include "encoder_jpeg.h"
 
+#include "drivers/udpsocket.h"
+#include <vector>
+
 #ifndef ENCODING_ENCODER_RTP_H_
 #define ENCODING_ENCODER_RTP_H_
 
 class EncoderRTP {
   private:
+    UDPSocket::Ptr socket;
+    std::vector<uint8_t> data;
+    uint16_t sequence;
+
+    void createHeader(uint8_t type, bool marker, uint16_t sequence, uint32_t timestamp);
+    void createJPEGHeader(uint32_t offset, uint8_t quality, uint8_t format, uint32_t width, uint32_t height);
+    void appendBytes(uint8_t *bytes, uint32_t length);
 
   public:
+    EncoderRTP(UDPSocket::Ptr socket);
 
+    void encode(Image::Ptr img);
 };
 
 #endif /* ENCODING_ENCODER_RTP_H_ */

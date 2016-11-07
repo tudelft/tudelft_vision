@@ -25,22 +25,27 @@
 #ifndef CAM_LINUX_H_
 #define CAM_LINUX_H_
 
+/**
+ * @brief A linux based camera
+ *
+ * This will setup a Linux based V4L2 camera.
+ */
 class CamLinux: public Cam, protected Debug {
-	protected:
-    /* The buffer state */
+  protected:
+    /** The buffer state */
     enum buffer_state_t {
-      BUFFER_ENQUEUED,          ///< The Buffer is enqueued
-      BUFFER_DEQUEUED           ///< The buffer is dequeued
+        BUFFER_ENQUEUED,          ///< The Buffer is enqueued
+        BUFFER_DEQUEUED           ///< The buffer is dequeued
     };
 
-    /* Specific V4L2 buffer */
+    /** Specific V4L2 buffer */
     struct buffer_t {
-      uint16_t index;             ///< The index of the buffer
-      enum buffer_state_t state;  ///< The current buffer state
+        uint16_t index;             ///< The index of the buffer
+        enum buffer_state_t state;  ///< The current buffer state
 
-      size_t length;              ///< The size of the buffer
-      void *buf;                  ///< Pointer to the memory mapped buffer
-      //uint32_t physp;             ///< Physical address pointer
+        size_t length;              ///< The size of the buffer
+        void *buf;                  ///< Pointer to the memory mapped buffer
+        //uint32_t physp;             ///< Physical address pointer
     };
 
     std::string device_name;                  ///< The device name including file path
@@ -69,8 +74,8 @@ class CamLinux: public Cam, protected Debug {
 
     void start(void);
     void stop(void);
-    std::shared_ptr<Image> getImage(void);
 
+    Image::Ptr getImage(void);
     void enqueueBuffer(uint16_t buffer_id);
 
     /* Settings */

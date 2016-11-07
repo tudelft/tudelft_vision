@@ -21,7 +21,6 @@
 #include <cstdint>
 #include <stdio.h>
 #include <vector>
-#include <memory>
 #include <jpeglib.h>
 
 #ifndef ENCODING_ENCODER_JPEG_H_
@@ -29,24 +28,27 @@
 
 class EncoderJPEG {
   private:
-    typedef struct _jpeg_destination_mem_mgr
-    {
-        jpeg_destination_mgr mgr;
-        std::vector<uint8_t> data;
+    /* New jpeg destination memory */
+    typedef struct _jpeg_destination_mem_mgr {
+        jpeg_destination_mgr mgr;   ///< Manager which holds the function points
+        std::vector<uint8_t> data;  ///< The byte data
     } jpeg_destination_mem_mgr;
 
-    struct jpeg_compress_struct cinfo;
-    struct jpeg_error_mgr jerr;
-    _jpeg_destination_mem_mgr dmgr;
+    struct jpeg_compress_struct cinfo;      ///< Compression information
+    struct jpeg_error_mgr jerr;             ///< Error function manager
+    _jpeg_destination_mem_mgr dmgr;         ///< Destination manager
+    uint8_t quality;                        ///< The output quality of the JPEG encoding
 
     static void initDestination(j_compress_ptr cinfo);
     static boolean emptyOutputBuffer(j_compress_ptr cinfo);
     static void termDestination(j_compress_ptr cinfo);
 
   public:
-    EncoderJPEG(void);
+    EncoderJPEG(uint8_t quality = 80);
 
-    std::shared_ptr<Image> encode(std::shared_ptr<Image> img);
+    Image::Ptr encode(Image::Ptr img);
+    void setQuality(uint8_t quality);
+    uint8_t getQuality(void);
 };
 
 #endif /* ENCODING_ENCODER_JPEG_H_ */

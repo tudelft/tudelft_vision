@@ -22,15 +22,16 @@
 #include <string.h>
 
 /**
- * Initialize the debugger
+ * @brief Initialize the debugger
+ * @param[in] identifier The identifier to print before the debug information
  */
 Debug::Debug(std::string identifier) {
-  enabled = true;
-  this->identifier = identifier;
+    enabled = true;
+    this->identifier = identifier;
 }
 
 /**
- * Generates a debug string based on the errno
+ * @brief Generates a debug string based on the errno
  * @return Formatted errno debug string
  */
 std::string Debug::errnoString(void) {
@@ -38,17 +39,33 @@ std::string Debug::errnoString(void) {
 }
 
 /**
- * Print a debug message
+ * @brief Print a debug message
+ * @param[in] message The message to print
  */
 void Debug::printDebug(std::string message) {
-  if(enabled)
-    std::cout << "[" << this->identifier << "] " << message;
+    if(enabled)
+        std::cout << "[" << this->identifier << "] " << message;
 }
 
 /**
- * Print a debug message with a new line
+ * @brief Print a debug message with a new line
+ * @param[in] message The message to print
  */
 void Debug::printDebugLine(std::string message) {
-  if(enabled)
-    std::cout  << "[" << this->identifier << "] " << message << std::endl;
+    if(enabled)
+        std::cout  << "[" << this->identifier << "] " << message << std::endl;
+}
+
+/**
+ * @brief This enables the debug output
+ */
+void Debug::enableDebug(void) {
+    enabled = true;
+}
+
+/**
+ * @brief This disables the debug output
+ */
+void Debug::disableDebug(void) {
+    enabled = false;
 }

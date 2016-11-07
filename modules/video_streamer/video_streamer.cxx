@@ -2,28 +2,37 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
+
 #include "encoding/encoder_jpeg.h"
 #include "cam/cam_bebop.h"
+#include "drivers/udpsocket.h"
+#include "encoding/encoder_rtp.h"
+#include <unistd.h>
 
 int main(int argc, char *argv[])
 {
   CamBebop cam;
+  //CamLinux cam("/dev/video0");
   EncoderJPEG jpeg_encoder;
-  //CamLinux cam("/dev/video1");
-  cam.setOutput(Image::FMT_YUYV, 1080, 720);
+  UDPSocket::Ptr udp = std::make_shared<UDPSocket>("192.168.42.2", 5000);
+  EncoderRTP rtp(udp);
+
+  cam.setOutput(Image::FMT_YUYV, 800, 600);
   //cam.setCrop(114, 106, 2048, 3320);
 
   cam.start();
   uint8_t i = 0;
   char test[200];
   while(true) {
-    std::shared_ptr<Image> img = cam.getImage();
-    std::shared_ptr<Image> jpeg = jpeg_encoder.encode(img);
+    Image::Ptr img = cam.getImage();
+    Image::Ptr jpeg = jpeg_encoder.encode(img);
+    rtp.encode(jpeg);
+    usleep(200000);
 
-    sprintf(test, "out%d.jpg", ++i);
+    /*sprintf(test, "out%d.jpg", ++i);
     FILE *fp = fopen(test, "w");
     fwrite((uint8_t *)jpeg->getData(), jpeg->getSize(), 1, fp);
-    fclose(fp);
+    fclose(fp);*/
   }
 
 

@@ -9,6 +9,10 @@ add_library(${PROJECT_NAME} SHARED ${SRCS})
 add_library(${PROJECT_NAME}_static STATIC ${SRCS})
 add_custom_target(${PROJECT_NAME}_headers SOURCES ${HDRS})
 
+# Style formatting
+find_program(ASTYLE_EXECUTABLE astyle DOC "A tool to format the code")
+add_custom_target(${PROJECT_NAME}_format ${ASTYLE_EXECUTABLE} --style=google ${SRCS} ${HDRS})
+
 # Lib JPEG
 find_package(JPEG REQUIRED)
 include_directories(${JPEG_INCLUDE_DIR})

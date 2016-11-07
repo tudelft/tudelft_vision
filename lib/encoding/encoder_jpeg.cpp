@@ -17,9 +17,17 @@
 
 #include "encoder_jpeg.h"
 #include "vision/image_buffer.h"
+#include <assert.h>
 
-#define BLOCK_SIZE 16384
+#define BLOCK_SIZE 16384    ///< Default memory size
 
+/**
+ * @brief Called to initialize the buffer
+ *
+ * This resizes the output buffer to the BLOCK_SIZE and sets the next byte to
+ * the first byte of the data vector.
+ * @param[in] cinfo The compression information
+ */
 void EncoderJPEG::initDestination(j_compress_ptr cinfo) {
     jpeg_destination_mem_mgr* dst = (jpeg_destination_mem_mgr*)cinfo->dest;
     dst->data.resize(BLOCK_SIZE);
@@ -27,8 +35,14 @@ void EncoderJPEG::initDestination(j_compress_ptr cinfo) {
     cinfo->dest->free_in_buffer = dst->data.size();
 }
 
-boolean EncoderJPEG::emptyOutputBuffer(j_compress_ptr cinfo)
-{
+/**
+ * @brief Called when the output buffer is empty
+ *
+ * This will resize the output buffer by adding another BLOCK_SIZE amount of bytes.
+ * @param[in] cinfo The compression information
+ * @return If the buffer has new free bytes
+ */
+boolean EncoderJPEG::emptyOutputBuffer(j_compress_ptr cinfo) {
     jpeg_destination_mem_mgr* dst = (jpeg_destination_mem_mgr*)cinfo->dest;
     size_t oldsize = dst->data.size();
     dst->data.resize(oldsize + BLOCK_SIZE);
@@ -37,20 +51,38 @@ boolean EncoderJPEG::emptyOutputBuffer(j_compress_ptr cinfo)
     return true;
 }
 
-void EncoderJPEG::termDestination(j_compress_ptr cinfo)
-{
+/**
+ * @brief Called when done writing to buffer
+ *
+ * This will resize the output buffer by removing the free bytes. This is done
+ * to make sure that the size of the output buffer matches the amount of bytes
+ * that are compressed.
+ * @param cinfo The compression information
+ */
+void EncoderJPEG::termDestination(j_compress_ptr cinfo) {
     jpeg_destination_mem_mgr* dst = (jpeg_destination_mem_mgr*)cinfo->dest;
     dst->data.resize(dst->data.size() - cinfo->dest->free_in_buffer);
 }
 
 /**
  * @brief Initialize the JPEG encoder
- * This sets up the output buffer and error handling ot the libjpeg encoder.
+ *
+ * This sets up the output buffer and error handling ot the libjpeg encoder. The
+ * default quality of the JPEG encoder is 80.
+ * @param[in] quality Optionally you can set a different default quality [1-100]
  */
-EncoderJPEG::EncoderJPEG(void) {
-    cinfo.err = jpeg_std_error(&jerr);
-    jpeg_create_compress(&cinfo);
+EncoderJPEG::EncoderJPEG(uint8_t quality) {
+    assert(quality > 0);
+    assert(quality <= 100);
 
+    // Set default quality
+    this->quality = quality;
+
+    // Set up default error
+    cinfo.err = jpeg_std_error(&jerr);
+
+    // Setup destination with own memory destination functions
+    jpeg_create_compress(&cinfo);
     cinfo.dest = (jpeg_destination_mgr*)&dmgr;
     cinfo.dest->init_destination = &initDestination;
     cinfo.dest->empty_output_buffer = &emptyOutputBuffer;
@@ -59,10 +91,12 @@ EncoderJPEG::EncoderJPEG(void) {
 
 /**
  * @brief Encode and image using JPEG compression
- * @param img The image to encode
+ *
+ * This will use libjpeg to encode an image using JPEG compression.
+ * @param[in] img The image to encode
  * @return The compressed output image
  */
-std::shared_ptr<Image> EncoderJPEG::encode(std::shared_ptr<Image> img) {
+Image::Ptr EncoderJPEG::encode(Image::Ptr img) {
     uint8_t *img_buf = (uint8_t *)img->getData();
     cinfo.image_width = img->getWidth();
     cinfo.image_height = img->getHeight();
@@ -70,7 +104,7 @@ std::shared_ptr<Image> EncoderJPEG::encode(std::shared_ptr<Image> img) {
     cinfo.in_color_space = JCS_YCbCr;
 
     jpeg_set_defaults(&cinfo);
-    jpeg_set_quality (&cinfo, 75, true);
+    jpeg_set_quality(&cinfo, quality, true);
     jpeg_start_compress(&cinfo, true);
 
 
@@ -93,4 +127,29 @@ std::shared_ptr<Image> EncoderJPEG::encode(std::shared_ptr<Image> img) {
 
     jpeg_finish_compress(&cinfo);
     return std::make_shared<ImageBuffer>(Image::FMT_JPEG, img->getWidth(), img->getHeight(), dmgr.data);
+}
+
+/**
+ * @brief Set the quality of JPEG output
+ *
+ * This will set the quality of the JPEG output which can be set as a value
+ * btween 1 and 100. Where 100 means the best quality.
+ * @param quality The new quality [1-100]
+ */
+void EncoderJPEG::setQuality(uint8_t quality) {
+    assert(quality > 0);
+    assert(quality <= 100);
+
+    this->quality = quality;
+}
+
+/**
+ * @brief Get the quality of the JPEG output
+ *
+ * Outputs the currently set value of the JPEG output quality. The value will be
+ * between 1 and 100. Where 100 means the best quality.
+ * @return The currently set quality
+ */
+uint8_t EncoderJPEG::getQuality(void) {
+    return this->quality;
 }

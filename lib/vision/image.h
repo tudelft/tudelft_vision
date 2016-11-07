@@ -16,31 +16,42 @@
  */
 
 #include <stdint.h>
+#include <memory>
 
 #ifndef VISION_IMAGE_H_
 #define VISION_IMAGE_H_
 
+/**
+ * @brief Abstract image definition
+ *
+ * This represents an image with a specific pixel format. This is an abstract
+ * class and can not be initialized by itself, since this class can't contain
+ * any data.
+ */
 class Image {
-	public:
-		/* The supported pixel formats */
-		enum pixel_formats {
-			FMT_UYVY,
-            FMT_YUYV,
-            FMT_JPEG,
-		};
+  public:
+    /** The supported pixel formats */
+    enum pixel_formats {
+        FMT_UYVY,       ///< UYVY with 2 bytes per pixel
+        FMT_YUYV,       ///< YUYV with 2 bytes per pixel
+        FMT_JPEG,       ///< A JPEG encoded image
+    };
 
-	protected:
-		uint32_t width, height;						///< The image width and height
-		enum pixel_formats pixel_format;	///< The image pixel format
-		void *data;							          ///< The image data
+    typedef std::shared_ptr<Image> Ptr; ///< Shared pointer representation of the image
 
-	public:
+  protected:
+    uint32_t width;                     ///< The image width
+    uint32_t height;                    ///< The image height
+    enum pixel_formats pixel_format;	///< The image pixel format
+    void *data;							///< The image data
 
-        virtual uint16_t getPixelSize(void);			///< Get the size in bytes of a pixel
-        virtual uint32_t getWidth(void) { return width; };
-        virtual uint32_t getHeight(void) { return height; };
-        virtual void *getData(void) { return data; };
-        virtual uint32_t getSize(void);
+  public:
+
+    virtual uint16_t getPixelSize(void);
+    virtual uint32_t getWidth(void);
+    virtual uint32_t getHeight(void);
+    virtual uint32_t getSize(void);
+    virtual void *getData(void);
 };
 
 #endif /* VISION_IMAGE_H_ */

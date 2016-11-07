@@ -29,12 +29,12 @@ class Debug {
     std::string identifier;   ///< The debug identifier
 
   protected:
-    std::string errnoString(void);                ///< Returns errno debug string
-    void printDebug(std::string message);         ///< Print a debug message
-    void printDebugLine(std::string message);     ///< Print a debug line
+    std::string errnoString(void);
+    void printDebug(std::string message);
+    void printDebugLine(std::string message);
 
-    void enableDebug(void) { enabled = true; };      ///< Enables the debug printing
-    void disableDebug(void) { enabled = false; };    ///< Disables the debug printing
+    void enableDebug(void);
+    void disableDebug(void);
 
   public:
     Debug(std::string identifier);    ///< Debug initialization

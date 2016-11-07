@@ -20,20 +20,58 @@
 #include <stdexcept>
 
 /**
- * Get the size in bytes of a single pixel
+ * @brief Get the size in bytes of a single pixel
  * @return The size of one pixel
  */
 uint16_t Image::getPixelSize(void) {
-  switch(pixel_format) {
+    switch(pixel_format) {
     case FMT_UYVY:
     case FMT_YUYV:
-      return (sizeof(uint8_t) * 2);
+        return (sizeof(uint8_t) * 2);
 
     default:
-      throw std::runtime_error("Unknown pixel format " + std::to_string(pixel_format));
-  }
+        throw std::runtime_error("Unknown pixel format " + std::to_string(pixel_format));
+    }
 }
 
+/**
+ * @brief Get the image width
+ *
+ * This will return the image width in pixels.
+ * @return The image width in pixels
+ */
+uint32_t Image::getWidth(void) {
+    return width;
+}
+
+/**
+ * @brief Get the image height
+ *
+ * This will return the image height in pixels.
+ * @return The image height in pixels
+ */
+uint32_t Image::getHeight(void) {
+    return height;
+}
+
+/**
+ * @brief Get the amount of bytes
+ *
+ * This will return the full image size in bytes and is calculated based
+ * on the pixel format.
+ * @return The full image size in bytes
+ */
 uint32_t Image::getSize(void) {
     return (getPixelSize() * width * height);
+}
+
+/**
+ * @brief Return the image data
+ *
+ * This will return a pointer to the image byte data. Based on the image format
+ * a function can interpret this data to perform operations.
+ * @return Pointer to the image data
+ */
+void *Image::getData(void) {
+    return data;
 }

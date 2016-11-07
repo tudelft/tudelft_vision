@@ -21,6 +21,12 @@
 #ifndef VISION_IMAGE_BUFFER_H_
 #define VISION_IMAGE_BUFFER_H_
 
+/**
+ * @brief Image based on a buffer
+ *
+ * This is an image based on a memory buffer. This buffer is automatically generated when constructing
+ * an object of this ImageBuffer class.
+ */
 class ImageBuffer: public Image {
   private:
     uint32_t size;  ///< The size in bytes of the buffer

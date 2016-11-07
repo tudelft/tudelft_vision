@@ -21,12 +21,20 @@
 #include <cstring>
 #include <vector>
 
+#ifndef DRIVERS_ISP_H_
+#define DRIVERS_ISP_H_
+
+/**
+ * @brief ISP driver for Parrot
+ *
+ * This is a driver implementation for the Parrot ISP which is used on the Bebop 1 and Bebop 2.
+ */
 class ISP: protected Debug {
   private:
     /* List all isp registers */
     enum {
-      AVI_DEFINE_NODE(EXPAND_AS_ENUM)
-      ISP_NODE_NR,
+        AVI_DEFINE_NODE(EXPAND_AS_ENUM)
+        ISP_NODE_NR,
     };
 
     int           devmem;
@@ -34,80 +42,78 @@ class ISP: protected Debug {
     unsigned      offsets[ISP_NODE_NR];
 
     /* ISP registers and the values */
-    struct avi_isp_registers
-    {
-      struct avi_isp_vlformat_32to40_regs vlformat_32to40;
-      struct avi_isp_chain_bayer_inter_regs bayer_inter;
-      struct avi_isp_pedestal_regs pedestal;
-      struct avi_isp_denoising_regs denoising;
-      struct avi_isp_bayer_regs bayer;
-      struct avi_isp_color_correction_regs color_correction;
-      struct avi_isp_vlformat_40to32_regs vlformat_40to32;
-      struct avi_isp_gamma_corrector_regs gamma_corrector;
-      struct avi_isp_gamma_corrector_ry_lut_regs ry_lut;
-      struct avi_isp_gamma_corrector_gu_lut_regs gu_lut;
-      struct avi_isp_gamma_corrector_bv_lut_regs bv_lut;
-      struct avi_isp_chroma_regs chroma;
-      struct avi_isp_chain_yuv_inter_regs yuv_inter;
+    struct avi_isp_registers {
+        struct avi_isp_vlformat_32to40_regs vlformat_32to40;
+        struct avi_isp_chain_bayer_inter_regs bayer_inter;
+        struct avi_isp_pedestal_regs pedestal;
+        struct avi_isp_denoising_regs denoising;
+        struct avi_isp_bayer_regs bayer;
+        struct avi_isp_color_correction_regs color_correction;
+        struct avi_isp_vlformat_40to32_regs vlformat_40to32;
+        struct avi_isp_gamma_corrector_regs gamma_corrector;
+        struct avi_isp_gamma_corrector_ry_lut_regs ry_lut;
+        struct avi_isp_gamma_corrector_gu_lut_regs gu_lut;
+        struct avi_isp_gamma_corrector_bv_lut_regs bv_lut;
+        struct avi_isp_chroma_regs chroma;
+        struct avi_isp_chain_yuv_inter_regs yuv_inter;
     };
     struct avi_isp_registers reg;
 
     /* ISP internal configuration */
-    struct avi_isp_config
-    {
-      uint8_t cfa;
+    struct avi_isp_config {
+        uint8_t cfa;
 
-      // Bayer chain
-      bool bayer_ped;
-      bool bayer_grim;
-      bool bayer_rip;
-      bool bayer_denoise;
-      bool bayer_lsc;
-      bool bayer_ca;
-      bool bayer_demos;
-      bool bayer_colm;
+        // Bayer chain
+        bool bayer_ped;
+        bool bayer_grim;
+        bool bayer_rip;
+        bool bayer_denoise;
+        bool bayer_lsc;
+        bool bayer_ca;
+        bool bayer_demos;
+        bool bayer_colm;
 
-      // pedestal
-      uint16_t pedestal_r;
-      uint16_t pedestal_gb;
-      uint16_t pedestal_gr;
-      uint16_t pedestal_b;
+        // pedestal
+        uint16_t pedestal_r;
+        uint16_t pedestal_gb;
+        uint16_t pedestal_gr;
+        uint16_t pedestal_b;
 
-      // Denoising
-      std::vector<uint8_t> denoise_red;
-      std::vector<uint8_t> denoise_green;
-      std::vector<uint8_t> denoise_blue;
+        // Denoising
+        std::vector<uint8_t> denoise_red;
+        std::vector<uint8_t> denoise_green;
+        std::vector<uint8_t> denoise_blue;
 
-      // Demosaicking
-      uint16_t demos_threshold_low;
-      uint16_t demos_threshold_high;
+        // Demosaicking
+        uint16_t demos_threshold_low;
+        uint16_t demos_threshold_high;
 
-      // Color correction
-      std::vector<std::vector<float>> cc_matrix;
-      std::vector<uint32_t> cc_offin;
-      std::vector<uint32_t> cc_offout;
-      std::vector<uint32_t> cc_clipmin;
-      std::vector<uint32_t> cc_clipmax;
+        // Color correction
+        std::vector<std::vector<float>> cc_matrix;
+        std::vector<uint32_t> cc_offin;
+        std::vector<uint32_t> cc_offout;
+        std::vector<uint32_t> cc_clipmin;
+        std::vector<uint32_t> cc_clipmax;
 
-      // Gamma corrector
-      bool gc_enable;
-      bool gc_palette;
-      bool gc_10bit;
-      std::vector<uint16_t> gc_rlut;
-      std::vector<uint16_t> gc_glut;
-      std::vector<uint16_t> gc_blut;
+        // Gamma corrector
+        bool gc_enable;
+        bool gc_palette;
+        bool gc_10bit;
+        std::vector<uint16_t> gc_rlut;
+        std::vector<uint16_t> gc_glut;
+        std::vector<uint16_t> gc_blut;
 
-      // Color space conversion
-      std::vector<std::vector<float>> csc_matrix;
-      std::vector<uint32_t> csc_offin;
-      std::vector<uint32_t> csc_offout;
-      std::vector<uint32_t> csc_clipmin;
-      std::vector<uint32_t> csc_clipmax;
+        // Color space conversion
+        std::vector<std::vector<float>> csc_matrix;
+        std::vector<uint32_t> csc_offin;
+        std::vector<uint32_t> csc_offout;
+        std::vector<uint32_t> csc_clipmin;
+        std::vector<uint32_t> csc_clipmax;
 
-      // YUV Chain
-      bool yuv_ee_crf;
-      bool yuv_i3d_lut;
-      bool yuv_drop;
+        // YUV Chain
+        bool yuv_ee_crf;
+        bool yuv_i3d_lut;
+        bool yuv_drop;
     };
     struct avi_isp_config config;
 
@@ -150,3 +156,5 @@ class ISP: protected Debug {
     void setColorSpaceConversion(std::vector<std::vector<float>> matrix, std::vector<uint32_t> offin, std::vector<uint32_t> offout, std::vector<uint32_t> clipmin, std::vector<uint32_t> clipmax);
     void setYUVChain(bool ee_crf, bool i3d_lut, bool drop);
 };
+
+#endif /* DRIVERS_ISP_H_ */
