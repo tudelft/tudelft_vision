@@ -29,16 +29,16 @@
  * This is a simple UDP client/server implementation.
  */
 class UDPSocket {
-  public:
+public:
     typedef std::shared_ptr<UDPSocket> Ptr; ///< Shared pointer representation of the UDP socket
 
-  private:
+private:
     int fd;                         ///< The socket file
     struct sockaddr_in addr_in;     ///< The input address
     struct sockaddr_in addr_out;    ///< The output address
     uint32_t max_packet_size;       ///< Maximum packet size
 
-  public:
+public:
     UDPSocket(std::string host, uint16_t port_in, uint16_t port_out);
     UDPSocket(std::string host, uint16_t port_out);
 
