@@ -18,6 +18,7 @@
 #include "image.h"
 
 #include <stdexcept>
+#include <assert.h>
 
 /**
  * @brief Get the size in bytes of a single pixel
@@ -74,4 +75,39 @@ uint32_t Image::getSize(void) {
  */
 void *Image::getData(void) {
     return data;
+}
+
+/**
+ * @brief Downsample the image
+ *
+ * This will downsample the image by dividing both the width and height by the downsample
+ * factor. This is only implemented for YUV 422 images and the width must be even. The
+ * result is saved in the same image.
+ * @param downsample The downsample factor
+ */
+void Image::downsample(uint16_t downsample) {
+    assert(pixel_format == FMT_UYVY || pixel_format == FMT_YUYV);
+    assert(width%2 == 0);
+    assert(downsample > 1);
+
+    uint8_t *src = (uint8_t *)data;
+    uint8_t *dst = (uint8_t *)data;
+    uint32_t new_width = width / downsample;
+    uint32_t new_height = height / downsample;
+    uint32_t pixel_skip = (downsample - 1) * 2;
+
+    for(uint32_t y = 0; y < new_height; y++) {
+        for(uint32_t x = 0; x < new_width; x += 2) {
+            *dst++ = *src++;
+            *dst++ = *src++;
+            *dst++ = *src++;
+            src += pixel_skip;
+            *dst++ = *src++;
+            src += pixel_skip;
+        }
+        src += pixel_skip * width;
+    }
+
+    width = new_width;
+    height = new_height;
 }

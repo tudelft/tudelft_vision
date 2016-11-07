@@ -11,10 +11,10 @@
 
 int main(int argc, char *argv[])
 {
-  CamBebop cam;
-  //CamLinux cam("/dev/video0");
+  //CamBebop cam;
+  CamLinux cam("/dev/video0");
   EncoderJPEG jpeg_encoder;
-  UDPSocket::Ptr udp = std::make_shared<UDPSocket>("192.168.42.2", 5000);
+  UDPSocket::Ptr udp = std::make_shared<UDPSocket>("127.0.0.1", 5000);
   EncoderRTP rtp(udp);
 
   cam.setOutput(Image::FMT_YUYV, 800, 600);
@@ -25,9 +25,10 @@ int main(int argc, char *argv[])
   char test[200];
   while(true) {
     Image::Ptr img = cam.getImage();
+    img->downsample(5);
     Image::Ptr jpeg = jpeg_encoder.encode(img);
     rtp.encode(jpeg);
-    usleep(200000);
+    usleep(300000);
 
     /*sprintf(test, "out%d.jpg", ++i);
     FILE *fp = fopen(test, "w");

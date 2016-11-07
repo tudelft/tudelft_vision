@@ -52,6 +52,7 @@ class Image {
     virtual uint32_t getHeight(void);
     virtual uint32_t getSize(void);
     virtual void *getData(void);
+    virtual void downsample(uint16_t downsample);
 };
 
 #endif /* VISION_IMAGE_H_ */
