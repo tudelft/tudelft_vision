@@ -15,29 +15,24 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "image.h"
 #include <vector>
+#include "cam/cam.h"
 
-#ifndef VISION_IMAGE_BUFFER_H_
-#define VISION_IMAGE_BUFFER_H_
+#ifndef TARGETS_TARGET_H_
+#define TARGETS_TARGET_H_
 
 /**
- * @brief Image based on a buffer
+ * @brief Target specific abstraction
  *
- * This is an image based on a memory buffer. This buffer is automatically generated when constructing
- * an object of this ImageBuffer class.
+ * This abstraction is used to add an abstraction layer between the platform and specific platform functions.
  */
-class ImageBuffer: public Image {
-  private:
-    uint32_t size;  ///< The size in bytes of the buffer
+class Target {
+  protected:
+    std::vector<std::pair<uint32_t, Cam::Ptr>> cams;    ///< The currently initialized cameras
 
   public:
-    ImageBuffer(enum pixel_formats pixel_format, uint32_t width, uint32_t height);
-    ImageBuffer(enum pixel_formats pixel_format, uint32_t width, uint32_t height, uint32_t size);
-    ImageBuffer(enum pixel_formats pixel_format, uint32_t width, uint32_t height, std::vector<uint8_t> &img);
-    ~ImageBuffer(void);
+    virtual Cam::Ptr getCamera(uint32_t id);
 
-    uint32_t getSize(void);
 };
 
-#endif /* VISION_IMAGE_BUFFER_H_ */
+#endif /* TARGETS_TARGET_H_ */

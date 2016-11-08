@@ -15,21 +15,20 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "isp/reg_avi.h"
-
-#include "debug.h"
-#include <cstring>
-#include <vector>
-
 #ifndef DRIVERS_ISP_H_
 #define DRIVERS_ISP_H_
+
+#include "isp/reg_avi.h"
+
+#include <cstring>
+#include <vector>
 
 /**
  * @brief ISP driver for Parrot
  *
  * This is a driver implementation for the Parrot ISP which is used on the Bebop 1 and Bebop 2.
  */
-class ISP: protected Debug {
+class ISP {
   private:
     /* List all isp registers */
     enum {

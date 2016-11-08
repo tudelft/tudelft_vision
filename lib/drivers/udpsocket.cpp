@@ -20,6 +20,13 @@
 #include <assert.h>
 #include <arpa/inet.h>
 
+/**
+ * @brief Create a new UDP socket with no input
+ *
+ * This will create a new UDP socket with only output
+ * @param[in] host The host address to send the output to
+ * @param[in] port_out The output port
+ */
 UDPSocket::UDPSocket(std::string host, uint16_t port_out) {
     max_packet_size = 1400;
     int one = 1;
@@ -34,6 +41,14 @@ UDPSocket::UDPSocket(std::string host, uint16_t port_out) {
     addr_out.sin_addr.s_addr = inet_addr(host.c_str());
 }
 
+/**
+ * @brief Create a new UDP socket with also input
+ *
+ * This will create a new UDP socket with both input and output
+ * @param host The host address to send the output to
+ * @param port_in The input port
+ * @param port_out The output port
+ */
 UDPSocket::UDPSocket(std::string host, uint16_t port_in, uint16_t port_out) {
     max_packet_size = 1400;
     int one = 1;
@@ -54,11 +69,24 @@ UDPSocket::UDPSocket(std::string host, uint16_t port_in, uint16_t port_out) {
     bind(fd, (struct sockaddr *)&addr_in, sizeof(addr_in));
 }
 
+/**
+ * @brief Transmit data to the UDP output
+ *
+ * This will transmit data to the UDP output
+ * @param data The data to transmit
+ */
 void UDPSocket::transmit(std::vector<uint8_t> data) {
     ssize_t cnt = sendto(fd, data.data(), data.size(), MSG_DONTWAIT, (struct sockaddr *)&addr_out, sizeof(addr_out));
-    assert(cnt == data.size());
+    assert(cnt > 0);
+    assert((uint32_t)cnt == data.size());
 }
 
+/**
+ * @brief Get the maximum packet size
+ *
+ * This will return the maximum packet size of an UDP packet.
+ * @return The maximum packet size
+ */
 uint32_t UDPSocket::getMaxPacketSize(void) {
     return max_packet_size;
 }

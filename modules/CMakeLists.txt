@@ -1,30 +1,32 @@
 cmake_minimum_required (VERSION 2.6)
 
-# Decide which target are we building for
-if (TARGET)
-    if((${TARGET} STREQUAL "bebop") OR (${TARGET} STREQUAL "linux"))
-        message ("\nBuilding for ${TARGET}\n")
-    else()
-        MESSAGE(FATAL_ERROR "Target ${TARGET} is not valid. Choices are \"bebop\" and \"linux\".")
-    endif()
-else(TARGET)
-    message ("\nTARGET was not set. Choices are \"bebop\" and \"linux\".")
-    message ("Example usage: cmake .. -DTARGET=linux")
-    message ("Now using [linux] as default.\n")
-    set (TARGET "linux")
-endif(TARGET)
-
-if(${TARGET} STREQUAL "bebop")
-    set (CMAKE_TOOLCHAIN_FILE bebop-toolchain.cmake)
-endif()
-
 # Set the output directories
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # Enable C++11
-set(CMAKE_CXX_FLAGS "-std=c++0x")
+if (CMAKE_VERSION VERSION_LESS "3.1")
+    check_cxx_compiler_flag("-std=c++11" COMPILER_SUPPORTS_CXX11)
+    check_cxx_compiler_flag("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
+    if(COMPILER_SUPPORTS_CXX11)
+        set(CMAKE_CXX_FLAGS "--std=c++11 ${CMAKE_CXX_FLAGS}")
+    elseif(COMPILER_SUPPORTS_CXX0X)
+        set(CMAKE_CXX_FLAGS "--std=c++0x ${CMAKE_CXX_FLAGS}")
+    endif ()
+else ()
+    set(CMAKE_CXX_STANDARD 11)
+endif ()
+
+# Enable warnings
+if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_GNUC)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
+endif ()
+
+# Enable timing output for gprof
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -pg")
+set(CMAKE_CPP_FLAGS_DEBUG "${CMAKE_CPP_FLAGS_DEBUG} -pg")
 
 # Add the vision library
 add_subdirectory(../lib tuv_lib)

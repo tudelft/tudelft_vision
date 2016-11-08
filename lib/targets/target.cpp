@@ -15,29 +15,21 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <string>
-
-#ifndef DRIVERS_DEBUG_H_
-#define DRIVERS_DEBUG_H_
+#include "target.h"
 
 /**
- * A linux based debug printing class
+ * @brief Get a specific camera
+ *
+ * This will search in the list with cameras for the camera with the specified ID.
+ * @param id The camera ID to request
+ * @return Pointer to the camera (will be nullptr if not found)
  */
-class Debug {
-  private:
-    bool enabled;             ///< If debug printing is enabled
-    std::string identifier;   ///< The debug identifier
+Cam::Ptr Target::getCamera(uint32_t id) {
+    /* Search in the list of cameras */
+    for(auto pair : cams) {
+        if(pair.first == id)
+            return pair.second;
+    }
 
-  protected:
-    std::string errnoString(void);
-    void printDebug(std::string message);
-    void printDebugLine(std::string message);
-
-    void enableDebug(void);
-    void disableDebug(void);
-
-  public:
-    Debug(std::string identifier);    ///< Debug initialization
-};
-
-#endif /* DRIVERS_DEBUG_H_ */
+    return nullptr;
+}

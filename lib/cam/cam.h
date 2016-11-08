@@ -27,6 +27,9 @@
  * decleration of a Camera.
  */
 class Cam {
+  public:
+    typedef std::shared_ptr<Cam> Ptr;           ///< Shared pointer representation of the camera
+
   protected:
     uint32_t width;                             ///< The output width in pixels
     uint32_t height;                            ///< The output height in pixels

@@ -15,29 +15,23 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "image.h"
-#include <vector>
+#include "target.h"
 
-#ifndef VISION_IMAGE_BUFFER_H_
-#define VISION_IMAGE_BUFFER_H_
+#ifndef TARGETS_LINUX_H_
+#define TARGETS_LINUX_H_
 
 /**
- * @brief Image based on a buffer
+ * @brief Generic Linux
  *
- * This is an image based on a memory buffer. This buffer is automatically generated when constructing
- * an object of this ImageBuffer class.
+ * This is a generic Linux implementation which uses V4L2 to access the camera's.
  */
-class ImageBuffer: public Image {
+class Linux : public Target {
   private:
-    uint32_t size;  ///< The size in bytes of the buffer
 
   public:
-    ImageBuffer(enum pixel_formats pixel_format, uint32_t width, uint32_t height);
-    ImageBuffer(enum pixel_formats pixel_format, uint32_t width, uint32_t height, uint32_t size);
-    ImageBuffer(enum pixel_formats pixel_format, uint32_t width, uint32_t height, std::vector<uint8_t> &img);
-    ~ImageBuffer(void);
+    Linux(void);
 
-    uint32_t getSize(void);
+    Cam::Ptr getCamera(uint32_t id);
 };
 
-#endif /* VISION_IMAGE_BUFFER_H_ */
+#endif /* TARGETS_LINUX_H_ */

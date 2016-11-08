@@ -17,6 +17,8 @@
 
 #include "i2cbus.h"
 
+#include "drivers/clogger.h"
+#include <cstring>
 #include <stdexcept>
 #include <assert.h>
 #include <fcntl.h>
@@ -30,17 +32,29 @@
  *
  * @param[in] i2c_bus The linux device name for the i2c bus including file path
  */
-I2CBus::I2CBus(std::string i2c_bus) : Debug("drivers::I2CBus") {
+I2CBus::I2CBus(std::string i2c_bus) {
     // Set the device name
     this->i2c_bus = i2c_bus;
 
     // Try to open the device
     fd = open(i2c_bus.c_str(), O_RDWR | O_NONBLOCK, 0);
     if(fd < 0) {
-        throw std::runtime_error("Could not open " + i2c_bus + " (" + errnoString() + ")");
+        throw std::runtime_error("Could not open " + i2c_bus + " (" + strerror(errno) + ")");
     }
 
-    printDebugLine("Opened " + i2c_bus);
+    CLOGGER_INFO("Opened " << i2c_bus);
+}
+
+/**
+ * @brief Close the I2C bus
+ *
+ * Close the file pointer to the i2c bus
+ */
+I2CBus::~I2CBus(void) {
+    assert(fd > 0);
+    close(fd);
+
+    CLOGGER_INFO("Closed " << i2c_bus);
 }
 
 /**
@@ -53,11 +67,11 @@ void I2CBus::setAddress(uint16_t address) {
 
     // Set the address
     if (ioctl(fd, I2C_SLAVE, (address >> 1)) < 0) {
-        throw std::runtime_error("Could not set slave address of " + i2c_bus + " with slave id " + std::to_string(address) + " (" + errnoString() + ")");
+        throw std::runtime_error("Could not set slave address of " + i2c_bus + " with slave id " + std::to_string(address) + " (" + strerror(errno) + ")");
     }
 
     current_address = address;
-    //printDebugLine("Set i2c address to " + std::to_string(address));
+    //SPDLOG_DEBUG("Set i2c address to " + std::to_string(address));
 }
 
 /**
@@ -80,7 +94,7 @@ bool I2CBus::transmit(uint8_t byte) {
 
     // Write a single byte to the device
     if(write(fd, &byte, 1) != 1) {
-        throw std::runtime_error("Could not transmit byte to " + i2c_bus + " (" + errnoString() + ")");
+        throw std::runtime_error("Could not transmit byte to " + i2c_bus + " (" + strerror(errno) + ")");
         return false;
     }
 
@@ -113,8 +127,8 @@ bool I2CBus::transmit(uint8_t *bytes, uint32_t length) {
     assert(fd >= 0);
 
     // Write multiple bytes to a device
-    if(write(fd, &bytes, length) != length) {
-        throw std::runtime_error("Could not transmit multiple bytes to (" + errnoString() + ")");
+    if(write(fd, &bytes, length) != (int32_t)length) {
+        throw std::runtime_error(std::string("Could not transmit multiple bytes to (") + strerror(errno) + ")");
         return false;
     }
 
@@ -152,7 +166,7 @@ bool I2CBus::receive(uint8_t *byte) {
 
     // Check if error occured
     if(bytes_read < 0 && (errno != EAGAIN && errno != EWOULDBLOCK)) {
-        throw std::runtime_error("Could not read a single byte from " + i2c_bus + " (" + errnoString() + ")");
+        throw std::runtime_error("Could not read a single byte from " + i2c_bus + " (" + strerror(errno) + ")");
     }
     // Check if no bytes are read
     else if(bytes_read < 1) {
@@ -196,7 +210,7 @@ bool I2CBus::receive(uint8_t *bytes, uint32_t *length) {
 
     // Check if error occured
     if(bytes_read < 0 && (errno != EAGAIN && errno != EWOULDBLOCK)) {
-        throw std::runtime_error("Could not read a single byte from " + i2c_bus + " (" + errnoString() + ")");
+        throw std::runtime_error("Could not read a single byte from " + i2c_bus + " (" + strerror(errno) + ")");
     }
     // Check if no bytes are read
     else if(bytes_read < 1) {
@@ -255,7 +269,7 @@ bool I2CBus::transceive(uint8_t *bytes, uint32_t write_length, uint32_t receive_
 
     // Execute the transceive
     if (ioctl(fd, I2C_RDWR, &trx_data) < 0) {
-        throw std::runtime_error("Could not do a transceive at " + i2c_bus + " I2C_RDWR (" + errnoString() + ")");
+        throw std::runtime_error("Could not do a transceive at " + i2c_bus + " I2C_RDWR (" + strerror(errno) + ")");
     }
 
     return true;

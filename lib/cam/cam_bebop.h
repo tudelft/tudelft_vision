@@ -19,6 +19,7 @@
 #include "drivers/i2cbus.h"
 #include "drivers/mt9f002.h"
 #include "drivers/isp.h"
+#include <vector>
 
 #ifndef CAM_BEBOP_H_
 #define CAM_BEBOP_H_
@@ -35,6 +36,8 @@ class CamBebop: public CamLinux {
     struct MT9F002::pll_config_t pll_config;    ///< PLL configuration for the MT9F002
     MT9F002 mt9f002;                            ///< MT9F002 driver
     ISP isp;                                    ///< ISP driver
+
+    std::vector<uint32_t> buffers_physp;        ///< Physical address pointers of buffers
 
   public:
     CamBebop(void);

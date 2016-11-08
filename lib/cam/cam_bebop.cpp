@@ -28,7 +28,7 @@ CamBebop::CamBebop(void) : CamLinux("/dev/video1"),
     i2c_bus("/dev/i2c-0"),
     pll_config{(26 / 2), 7, 1, 1, 59, 8, 1, 1, 1, 1},
     mt9f002(&i2c_bus, MT9F002::PARALLEL, pll_config) {
-    printf("A\n");
+
 }
 
 /**

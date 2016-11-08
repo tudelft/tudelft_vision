@@ -15,11 +15,10 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <string>
-#include "drivers/debug.h"
-
 #ifndef DRIVERS_I2CBUS_H_
 #define DRIVERS_I2CBUS_H_
+
+#include <string>
 
 /**
  * A linux based i2c driver
@@ -27,7 +26,7 @@
  * are non-blocking and the last i2c target address is remembered for the next transmit, receive
  * or transceive action.
  */
-class I2CBus: protected Debug {
+class I2CBus {
   private:
     std::string i2c_bus;  ///< The device name including file path
     int fd;										///< The file pointer to the i2c device
@@ -35,6 +34,7 @@ class I2CBus: protected Debug {
 
   public:
     I2CBus(std::string i2c_bus);
+    ~I2CBus(void);
 
     /* Operational functions */
     void setAddress(uint16_t address);			///< Set the target i2c address

@@ -17,6 +17,7 @@
 
 #include "isp.h"
 
+#include <string>
 #include <stdexcept>
 #include <fcntl.h>
 #include <sys/mman.h>
@@ -25,7 +26,7 @@
 #include <unistd.h>
 
 
-ISP::ISP(void) : Debug("Drivers::ISP") {
+ISP::ISP(void) {
 
 }
 /**
@@ -72,14 +73,14 @@ void ISP::configure(int fd) {
     // Open memory device
     devmem = open("/dev/mem", O_RDWR);
     if (devmem < 0) {
-        throw std::runtime_error("Could not open /dev/mem (" + errnoString() + ")");
+        throw std::runtime_error(std::string("Could not open /dev/mem (") + strerror(errno) + ")");
     }
 
     // Get the base
     avi_base = (unsigned long) mmap(NULL, AVI_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, devmem, AVI_BASE & ~AVI_MASK);
     if (avi_base == (unsigned long) MAP_FAILED) {
         close(devmem);
-        throw std::runtime_error("Could not mmap /dev/mem (" + errnoString() + ")");
+        throw std::runtime_error(std::string("Could not mmap /dev/mem (") + strerror(errno) + ")");
     }
 
     // Try to get the ISP offsets
@@ -87,7 +88,7 @@ void ISP::configure(int fd) {
     if (ioctl(fd, AVI_ISP_IOGET_OFFSETS, &off) < 0) {
         munmap((void *) avi_base, AVI_SIZE);
         close(devmem);
-        throw std::runtime_error("Could not get ISP offsets AVI_ISP_IOGET_OFFSETS (" + errnoString() + ")");
+        throw std::runtime_error(std::string("Could not get ISP offsets AVI_ISP_IOGET_OFFSETS (") + strerror(errno) + ")");
     }
 
 

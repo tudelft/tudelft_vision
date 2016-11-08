@@ -26,6 +26,12 @@
 #ifndef ENCODING_ENCODER_JPEG_H_
 #define ENCODING_ENCODER_JPEG_H_
 
+/**
+ * @brief JPEG encoder based on libjpeg
+ *
+ * This is a simple JPEG encoder and uses the libjpeg for encoding. It needs an YUV422 image as input
+ * and will convert this into a JPEG buffered image. This encoder will create a new image based on a buffer.
+ */
 class EncoderJPEG {
   private:
     /* New jpeg destination memory */

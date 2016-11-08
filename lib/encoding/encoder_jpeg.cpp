@@ -16,6 +16,7 @@
  */
 
 #include "encoder_jpeg.h"
+
 #include "vision/image_buffer.h"
 #include <assert.h>
 
@@ -108,7 +109,7 @@ Image::Ptr EncoderJPEG::encode(Image::Ptr img) {
     jpeg_start_compress(&cinfo, true);
 
 
-    std::vector<uint8_t> tmprowbuf(img->getWidth() * 3);
+    uint8_t tmprowbuf[img->getWidth() * 3];
     while (cinfo.next_scanline < cinfo.image_height) {
         uint32_t i, j;
         uint32_t offset = cinfo.next_scanline * cinfo.image_width * 2; //offset to the correct row
@@ -121,7 +122,7 @@ Image::Ptr EncoderJPEG::encode(Image::Ptr img) {
             tmprowbuf[j + 5] = img_buf[offset + i + 3]; // V (shared between pixels)
         }
 
-        JSAMPROW row_pointer = (JSAMPROW)tmprowbuf.data();
+        JSAMPROW row_pointer = (JSAMPROW)tmprowbuf;
         jpeg_write_scanlines(&cinfo, &row_pointer, 1);
     }
 

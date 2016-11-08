@@ -23,11 +23,17 @@
 #ifndef ENCODING_ENCODER_RTP_H_
 #define ENCODING_ENCODER_RTP_H_
 
+/**
+ * @brief Encode a JPEG or H264 image as RTP
+ *
+ * This will encode a JPEG or H264 image as RTP and transmit the result over a socket.
+ */
 class EncoderRTP {
   private:
-    UDPSocket::Ptr socket;
-    std::vector<uint8_t> data;
-    uint16_t sequence;
+    UDPSocket::Ptr socket;      ///< The socket to transmit the RTP stream over
+    uint16_t sequence;          ///< Sequence number of the RTP stream
+    std::vector<uint8_t> data;  ///< Internal data
+    uint16_t idx;               ///< Internal data index
 
     void createHeader(uint8_t type, bool marker, uint16_t sequence, uint32_t timestamp);
     void createJPEGHeader(uint32_t offset, uint8_t quality, uint8_t format, uint32_t width, uint32_t height);

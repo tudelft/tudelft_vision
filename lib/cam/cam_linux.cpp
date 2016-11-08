@@ -17,7 +17,9 @@
 
 #include "cam_linux.h"
 
+#include "drivers/clogger.h"
 #include "vision/image_v4l2.h"
+#include <cstring>
 #include <stdexcept>
 #include <assert.h>
 #include <fcntl.h>
@@ -33,7 +35,7 @@
  * output formats.
  * @param device_name The linux device name including path (for example: /dev/video1)
  */
-CamLinux::CamLinux(std::string device_name) : Debug("Cam::CamLinux") {
+CamLinux::CamLinux(std::string device_name) {
     // Set the device name
     this->device_name = device_name;
 
@@ -62,6 +64,7 @@ CamLinux::~CamLinux(void) {
 
     //TODO: stop streaming
     close(fd);
+    CLOGGER_INFO("Closed " << device_name);
 }
 
 /**
@@ -143,6 +146,7 @@ Image::Ptr CamLinux::getImage(void) {
 
     // Dequeue a buffer
     struct buffer_t *buffer = dequeueBuffer();
+    CLOGGER_INFO("Got new image from " << device_name);
 
     // Create an image
     return std::make_shared<ImageV4L2>(this, buffer->index, buffer->buf);
@@ -180,14 +184,14 @@ void CamLinux::initSubdevice(std::string subdevice_name, uint8_t pad, uint16_t c
     // Try to open the subdevice
     int sfd = open(subdevice_name.c_str(), O_RDWR, 0);
     if (sfd < 0) {
-        throw std::runtime_error("Could not open " + subdevice_name + " (" + errnoString() + ")");
+        throw std::runtime_error("Could not open " + subdevice_name + " (" + strerror(errno) + ")");
     }
 
     // Try to get the subdevice data format settings
     struct v4l2_subdev_format sfmt = {};
     if (ioctl(sfd, VIDIOC_SUBDEV_G_FMT, &sfmt) < 0) {
         close(sfd);
-        throw std::runtime_error("Could not get video format of " + subdevice_name + " VIDIOC_SUBDEV_G_FMT (" + errnoString() + ")");
+        throw std::runtime_error("Could not get video format of " + subdevice_name + " VIDIOC_SUBDEV_G_FMT (" + strerror(errno) + ")");
     }
 
     // Set the new settings
@@ -201,7 +205,7 @@ void CamLinux::initSubdevice(std::string subdevice_name, uint8_t pad, uint16_t c
 
     if (ioctl(sfd, VIDIOC_SUBDEV_S_FMT, &sfmt) < 0) {
         close(sfd);
-        throw std::runtime_error("Could not set video format of " + subdevice_name + " VIDIOC_SUBDEV_G_FMT (" + errnoString() + ")");
+        throw std::runtime_error("Could not set video format of " + subdevice_name + " VIDIOC_SUBDEV_G_FMT (" + strerror(errno) + ")");
     }
 
     // Close the device
@@ -219,10 +223,10 @@ void CamLinux::openDevice(void) {
     // Try to open the device
     fd = open(device_name.c_str(), O_RDWR | O_NONBLOCK, 0);
     if(fd < 0) {
-        throw std::runtime_error("Could not open " + device_name + " (" + errnoString() + ")");
+        throw std::runtime_error("Could not open " + device_name + " (" + strerror(errno) + ")");
     }
 
-    printDebugLine("Opened " + device_name);
+    CLOGGER_INFO("Opened " << device_name);
 }
 
 /**
@@ -236,12 +240,12 @@ void CamLinux::getCapabilities(void) {
     // Try to retreive the device capabilities
     if(ioctl(fd, VIDIOC_QUERYCAP, &cap) < 0) {
         close(fd);
-        throw std::runtime_error("Could not receive capabilities (VIDIOC_QUERYCAP) of " + device_name +  + " (" + errnoString() + ")");
+        throw std::runtime_error("Could not receive capabilities (VIDIOC_QUERYCAP) of " + device_name +  + " (" + strerror(errno) + ")");
     }
 
-    printDebugLine("Device driver is " + std::string((char *)cap.driver));
-    printDebugLine("Device name is " + std::string((char *)cap.card));
-    printDebugLine("Device version is " + std::to_string(cap.version));
+    CLOGGER_DEBUG("Device driver is " << cap.driver);
+    CLOGGER_DEBUG(cap.card);
+    CLOGGER_DEBUG(cap.version);
 
 
     // Check if the device is capable of capturing images
@@ -250,7 +254,7 @@ void CamLinux::getCapabilities(void) {
         throw std::runtime_error("Device " + device_name + " isn't capable of capturing images (V4L2_CAP_VIDEO_CAPTURE)");
     }
 
-    printDebugLine("The device is capable of video capturing");
+    CLOGGER_DEBUG("The device is capable of video capturing");
 }
 
 /**
@@ -268,7 +272,7 @@ void CamLinux::getFormats(void) {
 
     // Request possible formats
     while (ioctl(fd, VIDIOC_ENUM_FMT, &fmtdesc) == 0) {
-        printDebugLine("Found possible video format: \"" + std::string((char *)fmtdesc.description) + "\" (" + formatToString(fmtdesc.pixelformat) + ")");
+        CLOGGER_DEBUG("Found possible video format: \"" << (char*)fmtdesc.description << "\" (" << formatToString(fmtdesc.pixelformat) << ")");
         formats.push_back(fmtdesc);
         fmtdesc.index++;
     }
@@ -315,7 +319,7 @@ void CamLinux::setOutput(enum Image::pixel_formats format, uint32_t width, uint3
         throw std::runtime_error("Device " + device_name + " couldn't get resolution and pixelformat VIDIOC_G_FMT (" + std::to_string(width) + ", " + std::to_string(height) + ", " + formatToString(v4l2_format) + ")");
     }
 
-    printDebugLine("Configured output format " + formatToString(v4l2_format) + " with resolution " + std::to_string(width) + "x" + std::to_string(height) + " for device " + device_name);
+    CLOGGER_DEBUG("Configured output format " << formatToString(v4l2_format) << " with resolution " << width << "x" << height << " for device " << device_name);
 }
 
 /**
@@ -410,7 +414,7 @@ void CamLinux::initBuffers(void) {
         }*/
 
         //buffer.physp = pmem.paddr;
-        printDebugLine("MMAP buffer " + std::to_string(i) + " generated");
+        CLOGGER_DEBUG("MMAP buffer " << i << " generated");
         buffers.push_back(buffer);
     }
 }
@@ -437,7 +441,7 @@ void CamLinux::enqueueBuffer(struct buffer_t buffer) {
     }
 
     buffer.state = BUFFER_ENQUEUED;
-    printDebugLine("Enqueue buffer " + std::to_string(buffer.index));
+    CLOGGER_DEBUG("Enqueue buffer " << buffer.index);
 }
 
 /**
@@ -467,10 +471,10 @@ struct CamLinux::buffer_t *CamLinux::dequeueBuffer(void) {
     buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     buf.memory = V4L2_MEMORY_MMAP;
     if (ioctl(fd, VIDIOC_DQBUF, &buf) < 0) {
-        throw std::runtime_error("Could not dequeue a buffer for " + device_name + " (" + errnoString() + ")");
+        throw std::runtime_error("Could not dequeue a buffer for " + device_name + " (" + strerror(errno) + ")");
     }
 
-    printDebugLine("Dequeue buffer " + std::to_string(buf.index));
+    CLOGGER_DEBUG("Dequeue buffer " << buf.index);
 
     struct buffer_t *buffer = &buffers[buf.index];
     buffer->state = BUFFER_DEQUEUED;

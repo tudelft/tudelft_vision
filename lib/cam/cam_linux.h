@@ -16,7 +16,6 @@
  */
 
 #include "cam.h"
-#include "drivers/debug.h"
 
 #include <string>
 #include <vector>
@@ -30,7 +29,7 @@
  *
  * This will setup a Linux based V4L2 camera.
  */
-class CamLinux: public Cam, protected Debug {
+class CamLinux: public Cam {
   protected:
     /** The buffer state */
     enum buffer_state_t {
@@ -45,7 +44,6 @@ class CamLinux: public Cam, protected Debug {
 
         size_t length;              ///< The size of the buffer
         void *buf;                  ///< Pointer to the memory mapped buffer
-        //uint32_t physp;             ///< Physical address pointer
     };
 
     std::string device_name;                  ///< The device name including file path

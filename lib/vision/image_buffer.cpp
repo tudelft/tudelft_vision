@@ -63,7 +63,7 @@ ImageBuffer::ImageBuffer(enum pixel_formats pixel_format, uint32_t width, uint32
  * @param[in] height The height in pixels
  * @param[in] img The input byte buffer
  */
-ImageBuffer::ImageBuffer(enum pixel_formats pixel_format, uint32_t width, uint32_t height, std::vector<uint8_t> img) {
+ImageBuffer::ImageBuffer(enum pixel_formats pixel_format, uint32_t width, uint32_t height, std::vector<uint8_t> &img) {
     this->pixel_format = pixel_format;
     this->width = width;
     this->height = height;

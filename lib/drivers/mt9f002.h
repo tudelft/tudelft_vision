@@ -15,6 +15,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef DRIVERS_MT9F002_H_
+#define DRIVERS_MT9F002_H_
+
 #include "drivers/i2cbus.h"
 
 /**
@@ -137,3 +140,5 @@ class MT9F002 {
     struct gain_config_t getGains(void);
     void setGains(struct gain_config_t gains);
 };
+
+#endif /* DRIVERS_MT9F002_H_ */

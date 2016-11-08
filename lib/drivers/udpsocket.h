@@ -15,13 +15,13 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef DRIVERS_UDP_H_
+#define DRIVERS_UDP_H_
+
 #include <netinet/in.h>
 #include <string>
 #include <vector>
 #include <memory>
-
-#ifndef DRIVERS_UDP_H_
-#define DRIVERS_UDP_H_
 
 /**
  * @brief UDP driver
