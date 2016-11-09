@@ -1,3 +1,3 @@
 tudelft_vision.sublime-workspace
-doc
-modules-build
+build
+CMakeLists.txt.user
