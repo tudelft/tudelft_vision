@@ -12,9 +12,11 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 # Add the vision library
 add_subdirectory(tuv_lib)
 include(tuv_lib/common.cmake)
+MESSAGE( STATUS "Compiling for platform:         " ${PLATFORM} )
+MESSAGE( STATUS "Build type:                     " ${CMAKE_BUILD_TYPE} )
 
 # Add the projects
 foreach(project ${PROJECTS})
-    MESSAGE( STATUS "Found project:         " ${project} )
+    MESSAGE( STATUS "Found project:                  " ${project} )
     add_subdirectory(src/${project})
 endforeach(project)

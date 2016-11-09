@@ -1,6 +1,12 @@
 # Set default platform as linux
 if (NOT DEFINED PLATFORM)
-    set(PLATFORM Linux)
+    if (WIN32)
+        set(PLATFORM Windows)
+    elseif (APPLE)
+        set(PLATFORM OSX)
+    elseif (UNIX)
+        set(PLATFORM Linux)
+    endif ()
 endif (NOT DEFINED PLATFORM)
 add_definitions(-DPLATFORM=${PLATFORM})
 

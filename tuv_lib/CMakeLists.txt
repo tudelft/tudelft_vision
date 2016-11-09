@@ -11,12 +11,13 @@ file(GLOB SRCS
     "src/targets/target.cpp"
     "src/vision/image.cpp"
     "src/vision/image_buffer.cpp")
-file(GLOB SRCS_LINUX
-    "src/cam/cam_linux.cpp"
+file(GLOB SRCS_UNIX
     "src/drivers/i2cbus.cpp"
     "src/drivers/mt9f002.cpp"
     "src/drivers/udpsocket.cpp"
-    "src/encoding/encoder_rtp.cpp"
+    "src/encoding/encoder_rtp.cpp")
+file(GLOB SRCS_LINUX
+    "src/cam/cam_linux.cpp"
     "src/targets/linux.cpp"
     "src/vision/image_v4l2.cpp")
 file(GLOB SRCS_BEBOP
@@ -28,9 +29,11 @@ file(GLOB SRCS_JPEG
 
 # Platform based sources
 if (PLATFORM STREQUAL Linux)
-    set(SRCS ${SRCS} ${SRCS_LINUX})
+    set(SRCS ${SRCS} ${SRCS_UNIX} ${SRCS_LINUX})
+elseif (PLATFORM STREQUAL OSX)
+    set(SRCS ${SRCS} ${SRCS_UNIX})
 elseif (PLATFORM STREQUAL Bebop)
-    set(SRCS ${SRCS} ${SRCS_LINUX} ${SRCS_BEBOP})
+    set(SRCS ${SRCS} ${SRCS_UNIX} ${SRCS_LINUX} ${SRCS_BEBOP})
 endif ()
 
 # Find libjpeg and add sources
