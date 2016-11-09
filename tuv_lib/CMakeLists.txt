@@ -12,12 +12,12 @@ file(GLOB SRCS
     "src/vision/image.cpp"
     "src/vision/image_buffer.cpp")
 file(GLOB SRCS_UNIX
-    "src/drivers/i2cbus.cpp"
-    "src/drivers/mt9f002.cpp"
     "src/drivers/udpsocket.cpp"
     "src/encoding/encoder_rtp.cpp")
 file(GLOB SRCS_LINUX
     "src/cam/cam_linux.cpp"
+    "src/drivers/i2cbus.cpp"
+    "src/drivers/mt9f002.cpp"
     "src/targets/linux.cpp"
     "src/vision/image_v4l2.cpp")
 file(GLOB SRCS_BEBOP

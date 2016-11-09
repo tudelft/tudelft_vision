@@ -17,6 +17,7 @@
 
 #include "vision/image.h"
 
+#include <string>
 #include <stdexcept>
 #include <assert.h>
 
