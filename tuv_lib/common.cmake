@@ -1,7 +1,13 @@
+# Set default platform as linux
+if (NOT DEFINED PLATFORM)
+    set(PLATFORM Linux)
+endif (NOT DEFINED PLATFORM)
+add_definitions(-DPLATFORM=${PLATFORM})
+
 # Set release as default build type
-if(NOT CMAKE_BUILD_TYPE)
+if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
-endif(NOT CMAKE_BUILD_TYPE)
+endif (NOT CMAKE_BUILD_TYPE)
 
 # Enable C++11
 if (CMAKE_VERSION VERSION_LESS "3.1")

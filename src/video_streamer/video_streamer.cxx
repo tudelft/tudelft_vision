@@ -1,14 +1,29 @@
-// A simple program that computes the square root of a number
+/*
+ * This file is part of the XXX distribution (https://github.com/xxxx or http://xxx.github.io).
+ * Copyright (c) 2016 Freek van Tienen <freek.v.tienen@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include <tuv/tuv.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
-
-#include <tuv/tuv.h>
 #include <unistd.h>
 
 int main(int argc, char *argv[])
 {
-  Linux target;
+  PLATFORM target;
   EncoderJPEG jpeg_encoder;
   UDPSocket::Ptr udp = std::make_shared<UDPSocket>("127.0.0.1", 5000);
   EncoderRTP rtp(udp);
