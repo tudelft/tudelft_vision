@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 2.8)
 
 # Get all projects
 file(GLOB PROJECTS RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/src" "src/*")
-MESSAGE( STATUS "Projects:         " ${PROJECTS} )
 
 # Set output paths
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
@@ -16,5 +15,6 @@ include(tuv_lib/common.cmake)
 
 # Add the projects
 foreach(project ${PROJECTS})
-	add_subdirectory(src/${project})
+    MESSAGE( STATUS "Found project:         " ${project} )
+    add_subdirectory(src/${project})
 endforeach(project)

@@ -20,6 +20,7 @@ if (CMAKE_VERSION VERSION_LESS "3.1")
     endif ()
 else ()
     set(CMAKE_CXX_STANDARD 11)
+    set(CMAKE_CXX_STANDARD_REQUIRED on)
 endif ()
 
 # Enable warnings
