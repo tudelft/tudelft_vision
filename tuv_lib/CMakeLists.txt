@@ -23,9 +23,11 @@ file(GLOB SRCS_LINUX
 file(GLOB SRCS_BEBOP
     "src/cam/cam_bebop.cpp"
     "src/drivers/isp.cpp"
-    "src/encoding/encoder_h264.cpp")
+    "src/encoding/encoder_h264.cpp"
+    "src/targets/bebop.cpp")
 file(GLOB SRCS_JPEG
     "src/encoding/encoder_jpeg.cpp")
+set(SRCS_ALL ${SRCS} ${SRCS_UNIX} ${SRCS_LINUX} ${SRCS_BEBOP} ${SRCS_JPEG})
 
 # Platform based sources
 if (PLATFORM STREQUAL Linux)
@@ -78,7 +80,7 @@ install(DIRECTORY include/ DESTINATION include)
 
 # Style formatting
 find_program(ASTYLE_EXECUTABLE astyle DOC "A tool to format the code")
-add_custom_target(${PROJECT_NAME}_format ${ASTYLE_EXECUTABLE} --style=google ${SRCS} ${HDRS})
+add_custom_target(${PROJECT_NAME}_format ${ASTYLE_EXECUTABLE} --style=google ${SRCS_ALL} ${HDRS})
 
 # Enable logger output
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DCLOGGER_ENABLE")

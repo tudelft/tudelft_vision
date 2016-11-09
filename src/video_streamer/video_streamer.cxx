@@ -16,6 +16,7 @@
  */
 
 #include <tuv/tuv.h>
+#include PLATFORM_CONFIG
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -28,7 +29,7 @@ int main(int argc, char *argv[])
   UDPSocket::Ptr udp = std::make_shared<UDPSocket>("127.0.0.1", 5000);
   EncoderRTP rtp(udp);
 
-  Cam::Ptr cam = target.getCamera(0);
+  Cam::Ptr cam = target.getCamera(CAMERA_ID);
   cam->setOutput(Image::FMT_YUYV, 800, 600);
   //cam.setCrop(114, 106, 2048, 3320);
 

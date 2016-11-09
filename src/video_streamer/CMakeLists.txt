@@ -1,8 +1,13 @@
 cmake_minimum_required (VERSION 2.6)
 project (video_streamer CXX)
 
-add_executable(${PROJECT_NAME} video_streamer.cxx)
-target_link_libraries(${PROJECT_NAME} tuv)
+set(SUPPORTED_PLATFORMS "Linux" "Bebop")
 
-add_custom_target(upload
- COMMAND curl --upload-file ../bin/video_streamer ftp://192.168.42.1/internal_000/paparazzi/)
+if (";${SUPPORTED_PLATFORMS};" MATCHES ";${PLATFORM};")
+    add_executable(${PROJECT_NAME} video_streamer.cxx)
+    add_custom_target(${PROJECT_NAME}_headers SOURCES ${PLATFORM_CONFIG})
+    target_link_libraries(${PROJECT_NAME} tuv)
+
+    add_custom_target(upload
+     COMMAND curl --upload-file ../bin/video_streamer ftp://192.168.42.1/internal_000/paparazzi/)
+endif ()

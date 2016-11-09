@@ -1,4 +1,4 @@
-# Set default platform as linux
+# Set default platform as host OS
 if (NOT DEFINED PLATFORM)
     if (WIN32)
         set(PLATFORM Windows)
@@ -9,6 +9,11 @@ if (NOT DEFINED PLATFORM)
     endif ()
 endif (NOT DEFINED PLATFORM)
 add_definitions(-DPLATFORM=${PLATFORM})
+
+# Define the platform configuration file
+string(TOLOWER ${PLATFORM} PLATFORM_CONFIG)
+string(CONCAT PLATFORM_CONFIG ${PLATFORM_CONFIG} "_config.h")
+add_definitions(-DPLATFORM_CONFIG=\"${PLATFORM_CONFIG}\")
 
 # Set release as default build type
 if (NOT CMAKE_BUILD_TYPE)
