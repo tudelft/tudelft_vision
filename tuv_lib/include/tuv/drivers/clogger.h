@@ -35,6 +35,12 @@
 #define CLOGGER_INFO(...)
 #endif
 
+#if CLOGGER_ENABLE && !CLOGGER_NWARN
+#define CLOGGER_WARN(...) CLogger::warn_logger << CLogger::info_logger.format(__PRETTY_FUNCTION__, __FILE__, __LINE__) << __VA_ARGS__ << "\r\n"
+#else
+#define CLOGGER_WARN(...)
+#endif
+
 /**
  * @brief Custom made logger
  *
@@ -51,6 +57,7 @@ class CLogger {
   public:
     static CLogger debug_logger;                ///< Debug logger
     static CLogger info_logger;                 ///< Info logger
+    static CLogger warn_logger;                 ///< Warning logger
 
     static void addAllOutput(std::ostream *os);
 

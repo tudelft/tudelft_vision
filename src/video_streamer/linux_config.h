@@ -16,3 +16,4 @@
  */
 
 #define CAMERA_ID 0
+#define UDP_TARGET "127.0.0.1"

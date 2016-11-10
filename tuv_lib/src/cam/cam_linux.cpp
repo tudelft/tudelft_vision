@@ -128,7 +128,7 @@ Image::Ptr CamLinux::getImage(void) {
 
     // Wait until an image was taken, with a timeout of 2 seconds
     int sr = 0;
-    while(sr == 0) {
+    while(sr <= 0) {
         // Set image timeout
         struct timeval tv = {};
         tv.tv_sec = 2;
@@ -136,8 +136,8 @@ Image::Ptr CamLinux::getImage(void) {
 
         // Wait for an image
         sr = select(fd + 1, &fds, NULL, NULL, &tv);
-        if(sr < 0) {
-            throw std::runtime_error("Device " + device_name + " could not take a shot");
+        if(sr < 0 && errno != EINTR) {
+            throw std::runtime_error("Device " + device_name + " could not take a shot (" + strerror(errno) + ")");
         } else if(sr == 0) {
             printf("Timeout\r\n");
         }

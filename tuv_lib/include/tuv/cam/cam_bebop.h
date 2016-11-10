@@ -37,8 +37,6 @@ class CamBebop: public CamLinux {
     MT9F002 mt9f002;                            ///< MT9F002 driver
     ISP isp;                                    ///< ISP driver
 
-    std::vector<uint32_t> buffers_physp;        ///< Physical address pointers of buffers
-
   public:
     CamBebop(void);
 

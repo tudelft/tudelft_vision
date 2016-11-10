@@ -62,10 +62,17 @@ class EncoderH264 {
     uint32_t frame_rate;    ///< The output frame rate in FPS
     uint32_t bit_rate;      ///< The output bit rate (bits per second)
     uint32_t intra_rate;    ///< The output intra frame rate (everey intra_rate a intra frame is generated)
+    H264EncPictureType input_type;  ///< Input type
 
-    H264EncInst encoder;        ///< The H264 encoder instance
-    H264EncIn encoder_input;    ///< The H264 encoder input
-    H264EncOut encoder_output;  ///< The H264 encoder output
+    /* H264 contol and configuration */
+    H264EncInst encoder;                ///< The H264 encoder instance
+    H264EncConfig cfg;                  ///< The H264 encoder configuration
+    H264EncRateCtrl rcCfg;              ///< The H264 encoder rate configuration
+    H264EncCodingCtrl codingCfg;        ///< The H264 encoder coding configuration
+    H264EncPreProcessingCfg preProcCfg; ///< The H264 encoder pre processing configuration
+
+    H264EncIn encoder_input;        ///< The H264 encoder input
+    H264EncOut encoder_output;      ///< The H264 encoder output
     std::vector<struct buffer_t> input_buffers;     ///< The input buffers
     std::vector<struct buffer_t> output_buffers;    ///< The output buffers
 
@@ -77,8 +84,17 @@ class EncoderH264 {
     uint32_t encoder_frame_cnt;
     uint32_t intra_frame_cnt;
 
+    /* Private functions */
+    void openEncoder(void);
+    void closeEncoder(void);
+    void configureRate(void);
+    void configureCoding(void);
+    void configurePreProcessing(void);
+
   public:
-    EncoderH264();
+    EncoderH264(uint32_t width, uint32_t height);
+    EncoderH264(uint32_t width, uint32_t height, uint32_t frame_rate);
+    EncoderH264(uint32_t width, uint32_t height, uint32_t frame_rate, uint32_t bit_rate);
 
     Image::Ptr encode(Image::Ptr img);
 };

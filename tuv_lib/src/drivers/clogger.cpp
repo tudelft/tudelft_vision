@@ -20,6 +20,7 @@
 #include <iostream>
 CLogger CLogger::debug_logger("DEBUG", true);
 CLogger CLogger::info_logger("INFO");
+CLogger CLogger::warn_logger("WARN");
 
 /**
  * @brief Create a new logger
