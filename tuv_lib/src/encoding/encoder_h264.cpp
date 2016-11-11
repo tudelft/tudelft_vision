@@ -20,6 +20,29 @@
 #include "drivers/clogger.h"
 #include "encoding/h264/h264encapi.h"
 #include <stdexcept>
+#include <assert.h>
+
+/**
+ * @brief Generate a new H264 encoder
+ *
+ * This will generate a new Hantro H264 hardware encoder. The output frame rate will be set to 30 FPS
+ * and the target output bit rate will be set to 1Mbps
+ * @param width The output width in pixels (must be multiple of 4)
+ * @param height The output height in pixels (must be multiple of 2)
+ */
+EncoderH264::EncoderH264(uint32_t width, uint32_t height) {
+    assert(width % 4);
+    assert(height % 2);
+
+    // Set the output settings
+    output_cfg.width = width;
+    output_cfg.height = height;
+    output_cfg.frame_rate = 30;     // 30 FPS
+    output_cfg.bit_rate = 1000000;  // 1Mbps
+
+    // Open the encoder
+    openEncoder();
+}
 
 /**
  * @brief Open the Hantro encoder
@@ -27,6 +50,8 @@
  * This will create a new Hantro encoder instance
  */
 void EncoderH264::openEncoder(void) {
+    assert(output_cfg.width % 4);
+    assert(output_cfg.height % 2);
 
     /* Check if we have an encoder and get the version */
     H264EncBuild encBuild = H264EncGetBuild();
@@ -36,18 +61,17 @@ void EncoderH264::openEncoder(void) {
     CLOGGER_INFO("Found hantro encoder (HW: " << encBuild.hwBuild << " SW: " << encBuild.swBuild << ")");
 
     /* Set encoder configuration */
-    cfg.width = width;
-    cfg.height = height;
+    cfg.width = output_cfg.width;
+    cfg.height = output_cfg.height;
 
     cfg.frameRateDenom = 1;
-    cfg.frameRateNum = frame_rate;
+    cfg.frameRateNum = output_cfg.frame_rate;
 
     cfg.streamType = H264ENC_BYTE_STREAM;
-
-    cfg.level = H264ENC_LEVEL_4; // level 4 minimum for 1080p
-    cfg.viewMode = H264ENC_BASE_VIEW_DOUBLE_BUFFER; // maybe H264ENC_BASE_VIEW_SINGLE_BUFFER
-    cfg.scaledWidth = 16; // 0
-    cfg.scaledHeight = 16; // 0
+    cfg.level = H264ENC_LEVEL_4; // Level 4 minimum for 1080p
+    cfg.viewMode = H264ENC_BASE_VIEW_DOUBLE_BUFFER;
+    cfg.scaledWidth = 0;    // Disable scaled output
+    cfg.scaledHeight = 0;   // Disable scaled output
 
     /* Initialize an encoder with the configuration */
     if(H264EncInit(&cfg, &encoder) != H264ENC_OK) {
@@ -68,6 +92,14 @@ void EncoderH264::closeEncoder(void) {
     }
 }
 
+/**
+ * @brief Configure the rate controller configuration
+ *
+ * This will set the following settings:
+ * - Target bit rate (bits/second)
+ * - GOP length (same as intra rate, which is set at FPS)
+ * - Hypothetical Reference Decoder model (disabled)
+ */
 void EncoderH264::configureRate(void) {
     /* Get the current rate control configuration */
     if(H264EncGetRateCtrl(encoder, &rcCfg) != H264ENC_OK) {
@@ -82,15 +114,19 @@ void EncoderH264::configureRate(void) {
     CLOGGER_DEBUG("Rate control GOP length: " << rcCfg.gopLen);
 
     /* Update the rate control configuration */
-    rcCfg.bitPerSecond = bit_rate;
-    rcCfg.gopLen = intra_rate; // user guide says to set goLopen to I frame rate
-    rcCfg.hrd = 0; // disable Hrd conformance
+    rcCfg.bitPerSecond = output_cfg.bit_rate;
+    rcCfg.gopLen = output_cfg.frame_rate; // Advised is intra rate (FPS)
+    rcCfg.hrd = 0; // Disable Hrd conformance
     if(H264EncSetRateCtrl(encoder, &rcCfg) != H264ENC_OK) {
         std::runtime_error("Failed to set the rate control information for the Hantro H264");
     }
 }
 
-
+/**
+ * @brief Configure the coding controller
+ *
+ * Here nothing is adjusted, but only all settings are read for debugging information.
+ */
 void EncoderH264::configureCoding(void) {
     /* Get the current conding control configuration */
     if(H264EncGetCodingCtrl(encoder, &codingCfg) != H264ENC_OK) {
@@ -102,12 +138,23 @@ void EncoderH264::configureCoding(void) {
     CLOGGER_DEBUG("Conding control Constrained intra prediction: " << codingCfg.constrainedIntraPrediction);
 
     /* Set the coding control configuration */
-    /*if((ret = H264EncSetCodingCtrl(encoder, &codingCfg)) != H264ENC_OK)
+    /*if(H264EncSetCodingCtrl(encoder, &codingCfg) != H264ENC_OK)
     {
         std::runtime_error(std::string("Failed to set the coding control information for the Hantro H264");
     }*/
 }
 
+/**
+ * @brief Configure the pre processing
+ *
+ * This configures the input pre processing, like input type, rotation, scaling etc.
+ * The following settings are configured:
+ * - Input type (Set to the input image pixel format)
+ * - Rotation (Set to the input rotation)
+ * - Original width (Set to the input width)
+ * - Original height (Set to the input height)
+ * - Scaled output (Is disabled)
+ */
 void EncoderH264::configurePreProcessing(void) {
     /* Get the current pre processing configuration  */
     if(H264EncGetPreProcessing(encoder, &preProcCfg) != H264ENC_OK) {
@@ -118,14 +165,59 @@ void EncoderH264::configurePreProcessing(void) {
     CLOGGER_DEBUG("Pre processor Offset x: " << preProcCfg.xOffset << "  Offset Y: " << preProcCfg.yOffset);
     CLOGGER_DEBUG("Pre processor Rotation: " << preProcCfg.rotation << "  Stabilization: " << preProcCfg.videoStabilization);
 
-    preProcCfg.inputType = input_type;
-    preProcCfg.rotation = H264ENC_ROTATE_0;
-    preProcCfg.origWidth = width;
-    preProcCfg.origHeight = height;
-    //preProcCfg.scaledOutput = 1;
+    preProcCfg.inputType = getEncPictureType(input_cfg.format);
+    preProcCfg.rotation = getEncPictureRotation(input_cfg.rot);
+    preProcCfg.origWidth = input_cfg.width;
+    preProcCfg.origHeight = input_cfg.height;
+    preProcCfg.scaledOutput = 0;    // Disable scaled output
 
     /* Set the pre processor configuration */
     if(H264EncSetPreProcessing(encoder, &preProcCfg) != H264ENC_OK) {
         std::runtime_error("Failed to set the pre processing information for the Hantro H264");
+    }
+}
+
+/**
+ * @brief Convert image pixel format to H264 picture type
+ *
+ * This will convert an image pixel type into a H264 encoder picture type.
+ * @param format The input image format
+ * @return The H264 picture type of the input format
+ */
+H264EncPictureType EncoderH264::getEncPictureType(Image::pixel_formats format) {
+    switch(format) {
+        case Image::FMT_UYVY:
+            return H264ENC_YUV422_INTERLEAVED_UYVY;
+
+        case Image::FMT_YUYV:
+            return H264ENC_YUV422_INTERLEAVED_YUYV;
+
+        default:
+            std::runtime_error("Invalid input picture type for the Hantro H264");
+            return H264ENC_YUV420_PLANAR;
+    }
+}
+
+/**
+ * @brief Convert rotation into H264 picture rotation
+ *
+ * This will convert a rotation into a H264 encoder picture rotation type.
+ * @param rot The input rotation
+ * @return The H264 picture rotation type of the input rotation
+ */
+H264EncPictureRotation EncoderH264::getEncPictureRotation(enum rotation_t rot) {
+    switch(rot) {
+        case ROTATE_0:
+            return H264ENC_ROTATE_0;
+
+        case ROTATE_90L:
+            return H264ENC_ROTATE_90L;
+
+        case ROTATE_90R:
+            return H264ENC_ROTATE_90R;
+
+        default:
+            std::runtime_error("Invalid input rotation type for the Hantro H264");
+            return H264ENC_ROTATE_0;
     }
 }

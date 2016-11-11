@@ -32,42 +32,31 @@
  */
 class EncoderH264 {
   public:
+    /** Possible rotation options */
     enum rotation_t {
-
+        ROTATE_0,       ///< Don't rotate the input image
+        ROTATE_90R,     ///< Rotate the image 90 degrees right
+        ROTATE_90L      ///< Rotate the image 90 degrees left
     };
 
   private:
-
-    /** H264 Frame types */
-    enum frame_type_t {
-        FRAME_INVALID,      ///< Invalid frame
-        FRAME_I,            ///< Intra frame
-        FRAME_P             ///< Prediction frame
+    /** Input settings */
+    struct input_cfg_t {
+        Image::pixel_formats format;    ///< Input image pixel format
+        uint32_t width;                 ///< Input image width in pixels
+        uint32_t height;                ///< Input image height in pxels
+        enum rotation_t rot;            ///< Input image rotation
     };
+    struct input_cfg_t input_cfg;       ///< The input configuration
 
-    /** H264 buffer statusses */
-    enum buffer_status_t {
-        BUF_FREE,           ///< Buffer is free
-        BUF_LOCKED,         ///< Buffer is locked by the user
-        BUF_READY,          ///< Buffer is ready for use
-        BUF_TOBE_RELEASED   ///< Buffer is going to be released
+    /** Output settings */
+    struct output_cfg_t {
+        uint32_t width;                 ///< Output image width in pixels
+        uint32_t height;                ///< Output image height in pixesl
+        float frame_rate;               ///< Output frame rate in FPS
+        uint32_t bit_rate;              ///< Target bit rate in bits/second [10000..60000000]
     };
-
-    /** H264 input and output buffer description */
-    struct buffer_t {
-        enum buffer_status_t status;    ///< Buffer status
-        uint32_t size;                  ///< Size of the buffer
-        enum frame_type_t frame_type;   ///< Type of frame
-        EWLLinearMem_t venc_mem;        ///< Video encoder memory
-        uint32_t frame_idx;             ///< Frame index
-    };
-
-    uint32_t width;         ///< The output width in pixels
-    uint32_t height;        ///< The output height in pixels
-    uint32_t frame_rate;    ///< The output frame rate in FPS
-    uint32_t bit_rate;      ///< The output bit rate (bits per second)
-    uint32_t intra_rate;    ///< The output intra frame rate (everey intra_rate a intra frame is generated)
-    H264EncPictureType input_type;  ///< Input type
+    struct output_cfg_t output_cfg;     ///< The output configuration
 
     /* H264 contol and configuration */
     H264EncInst encoder;                ///< The H264 encoder instance
@@ -76,32 +65,33 @@ class EncoderH264 {
     H264EncCodingCtrl codingCfg;        ///< The H264 encoder coding configuration
     H264EncPreProcessingCfg preProcCfg; ///< The H264 encoder pre processing configuration
 
+    /* Encoding information */
     H264EncIn encoder_input;            ///< The H264 encoder input
     H264EncOut encoder_output;          ///< The H264 encoder output
-    std::vector<struct buffer_t> input_buffers;     ///< The input buffers
-    std::vector<struct buffer_t> output_buffers;    ///< The output buffers
+    EWLLinearMem_t sps_pps_nalu;        ///< SPS + PPS NALU buffer
 
-    EWLLinearMem_t start_buffer;
-    uint32_t start_buffer_size;
+    uint32_t frame_cnt;                 ///< Frame counter
+    uint32_t intra_cnt;                 ///< Intra frame counter for determining when intra frame must be generated
 
-    uint32_t input_frame_cnt;
-    uint32_t output_frame_cnt;
-    uint32_t encoder_frame_cnt;
-    uint32_t intra_frame_cnt;
-
-    /* Private functions */
+    /* Initialization functions */
     void openEncoder(void);
     void closeEncoder(void);
     void configureRate(void);
     void configureCoding(void);
     void configurePreProcessing(void);
 
+    /* Helper functions */
+    H264EncPictureType getEncPictureType(Image::pixel_formats format);
+    H264EncPictureRotation getEncPictureRotation(enum rotation_t rot);
+
   public:
     EncoderH264(uint32_t width, uint32_t height);
-    EncoderH264(uint32_t width, uint32_t height, uint32_t frame_rate);
-    EncoderH264(uint32_t width, uint32_t height, uint32_t frame_rate, uint32_t bit_rate);
+    EncoderH264(uint32_t width, uint32_t height, float frame_rate);
+    EncoderH264(uint32_t width, uint32_t height, float frame_rate, uint32_t bit_rate);
+    ~EncoderH264(void);
 
-    void setInput(uint32_t width, uint32_t height, Image::pixel_formats format);
+    void setInput(Image::pixel_formats format, uint32_t width, uint32_t height);
+    void setInput(Image::pixel_formats format, uint32_t width, uint32_t height, enum rotation_t rot);
     Image::Ptr encode(Image::Ptr img);
 };
 
