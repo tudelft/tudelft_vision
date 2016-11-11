@@ -1,11 +1,12 @@
 language: cpp
 env:
-	- BUILD_TYPE=Release
-	- BUILD_TYPE=Debug
-	- TOOLCHAIN=bebop BUILD_TYPE=Release
-	- TOOLCHAIN=bebop BUILD_TYPE=Debug
+  - BUILD_TYPE=Release
+  - BUILD_TYPE=Debug
+  - TOOLCHAIN=bebop BUILD_TYPE=Release
+  - TOOLCHAIN=bebop BUILD_TYPE=Debug
 before_script:
-	- mkdir build && cd build
-	- cmake ../ -DCMAKE_TOOLCHAIN_FILE=toolchains/$TOOLCHAIN-toochain.cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+  - mkdir build && cd build
+  - if [ -n "$TOOLCHAIN" ]; then export TOOLCHAIN_ARG="-DCMAKE_TOOLCHAIN_FILE=toolchains/$TOOLCHAIN-toolchain.cmake"; fi
+  - cmake ../ -DCMAKE_BUILD_TYPE=$BUILD_TYPE $TOOLCHAIN_ARG
 script:
-	- make -j2
+  - make -j2
