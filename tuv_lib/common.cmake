@@ -12,7 +12,7 @@ add_definitions(-DPLATFORM=${PLATFORM})
 
 # Define the platform configuration file
 string(TOLOWER ${PLATFORM} PLATFORM_CONFIG)
-string(CONCAT PLATFORM_CONFIG ${PLATFORM_CONFIG} "_config.h")
+set(PLATFORM_CONFIG "${PLATFORM_CONFIG}_config.h")
 add_definitions(-DPLATFORM_CONFIG=\"${PLATFORM_CONFIG}\")
 
 # Set release as default build type
@@ -22,6 +22,7 @@ endif (NOT CMAKE_BUILD_TYPE)
 
 # Enable C++11
 if (CMAKE_VERSION VERSION_LESS "3.1")
+    include(CheckCXXCompilerFlag)
     check_cxx_compiler_flag("-std=c++11" COMPILER_SUPPORTS_CXX11)
     check_cxx_compiler_flag("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
     if(COMPILER_SUPPORTS_CXX11)

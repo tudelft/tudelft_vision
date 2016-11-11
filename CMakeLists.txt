@@ -1,5 +1,4 @@
-# At LEAST 2.8 but newer is better
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required (VERSION 2.8.12 FATAL_ERROR)
 
 # Get all projects
 file(GLOB PROJECTS RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/src" "src/*")
