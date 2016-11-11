@@ -33,7 +33,7 @@ void EncoderH264::openEncoder(void) {
     if (encBuild.hwBuild == EWL_ERROR){
         std::runtime_error("Could not find the Hantro H264 encoder");
     }
-    CLOGGER_INFO("Found hantro encoder (HW: " << encBuild.hwBuild << " SW:" << encBuild.swBuild);
+    CLOGGER_INFO("Found hantro encoder (HW: " << encBuild.hwBuild << " SW: " << encBuild.swBuild << ")");
 
     /* Set encoder configuration */
     cfg.width = width;

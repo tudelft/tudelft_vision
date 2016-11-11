@@ -31,6 +31,11 @@
  * Bebop and the Bebop 2.
  */
 class EncoderH264 {
+  public:
+    enum rotation_t {
+
+    };
+
   private:
 
     /** H264 Frame types */
@@ -71,8 +76,8 @@ class EncoderH264 {
     H264EncCodingCtrl codingCfg;        ///< The H264 encoder coding configuration
     H264EncPreProcessingCfg preProcCfg; ///< The H264 encoder pre processing configuration
 
-    H264EncIn encoder_input;        ///< The H264 encoder input
-    H264EncOut encoder_output;      ///< The H264 encoder output
+    H264EncIn encoder_input;            ///< The H264 encoder input
+    H264EncOut encoder_output;          ///< The H264 encoder output
     std::vector<struct buffer_t> input_buffers;     ///< The input buffers
     std::vector<struct buffer_t> output_buffers;    ///< The output buffers
 
@@ -96,6 +101,7 @@ class EncoderH264 {
     EncoderH264(uint32_t width, uint32_t height, uint32_t frame_rate);
     EncoderH264(uint32_t width, uint32_t height, uint32_t frame_rate, uint32_t bit_rate);
 
+    void setInput(uint32_t width, uint32_t height, Image::pixel_formats format);
     Image::Ptr encode(Image::Ptr img);
 };
 
