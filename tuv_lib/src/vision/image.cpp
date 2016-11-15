@@ -22,7 +22,35 @@
 #include <assert.h>
 
 /**
+ * @brief Create a new image
+ *
+ * This will create a new image with a specific pixel format, width and height.
+ * @param pixel_format The image pixel format (ordering of channels per pixel)
+ * @param width The image width in pixels
+ * @param height The image height in pixels
+ */
+Image::Image(enum pixel_formats pixel_format, uint32_t width, uint32_t height, uint32_t size):
+    width(width),
+    height(height),
+    pixel_format(pixel_format),
+    size(size) {
+
+}
+
+/**
+ * @brief Get the image pixel format
+ *
+ * This returns the order in which a pixel is arranged in the memory.
+ * @return The pixel format the image is in
+ */
+enum Image::pixel_formats Image::getPixelFormat(void) {
+    return pixel_format;
+}
+
+/**
  * @brief Get the size in bytes of a single pixel
+ *
+ * This will return the size in bytes of 1 pixel if possible.
  * @return The size of one pixel
  */
 uint16_t Image::getPixelSize(void) {
@@ -64,7 +92,7 @@ uint32_t Image::getHeight(void) {
  * @return The full image size in bytes
  */
 uint32_t Image::getSize(void) {
-    return (getPixelSize() * width * height);
+    return size;
 }
 
 /**

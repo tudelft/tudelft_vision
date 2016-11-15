@@ -23,6 +23,10 @@
 #include <tuv/encoding/h264/h264encapi.h>
 #include <tuv/encoding/h264/ewl.h>
 #include <tuv/vision/image.h>
+#include <tuv/vision/image_ptr.h>
+#include <tuv/cam/cam.h>
+
+#define BEBOP_EWL_OFFSET 0x658 ///< Bebop offset from encoder to EWL instance
 
 /**
  * @brief H264 image encoder
@@ -30,7 +34,7 @@
  * This is an H264 image encoder based on the hantro h264 encoder. This is currently only implemented for the
  * Bebop and the Bebop 2.
  */
-class EncoderH264 {
+class EncoderH264: public ImagePtr::Handler {
   public:
     /** Possible rotation options */
     enum rotation_t {
@@ -40,6 +44,13 @@ class EncoderH264 {
     };
 
   private:
+    /** Output buffer */
+    struct output_buf_t {
+        uint16_t index;                 ///< Index of the buffer (identification for freeing)
+        EWLLinearMem_t mem;             ///< EWL memory information
+        bool is_free;                   ///< Whether the buffer is free
+    };
+
     /** Input settings */
     struct input_cfg_t {
         Image::pixel_formats format;    ///< Input image pixel format
@@ -66,12 +77,12 @@ class EncoderH264 {
     H264EncPreProcessingCfg preProcCfg; ///< The H264 encoder pre processing configuration
 
     /* Encoding information */
-    H264EncIn encoder_input;            ///< The H264 encoder input
-    H264EncOut encoder_output;          ///< The H264 encoder output
-    EWLLinearMem_t sps_pps_nalu;        ///< SPS + PPS NALU buffer
-
     uint32_t frame_cnt;                 ///< Frame counter
     uint32_t intra_cnt;                 ///< Intra frame counter for determining when intra frame must be generated
+    std::vector<uint8_t> sps_nalu;      ///< SPS NALU
+    std::vector<uint8_t> pps_nalu;      ///< PPS NALU
+    EWLLinearMem_t sps_pps_nalu;        ///< SPS + PPS NALU buffer
+    std::vector<struct output_buf_t> output_buffers;    ///< Output buffers
 
     /* Initialization functions */
     void openEncoder(void);
@@ -79,20 +90,30 @@ class EncoderH264 {
     void configureRate(void);
     void configureCoding(void);
     void configurePreProcessing(void);
+    void streamStart(void);
 
     /* Helper functions */
     H264EncPictureType getEncPictureType(Image::pixel_formats format);
     H264EncPictureRotation getEncPictureRotation(enum rotation_t rot);
+    struct output_buf_t *getFreeBuffer(void);
 
   public:
-    EncoderH264(uint32_t width, uint32_t height);
-    EncoderH264(uint32_t width, uint32_t height, float frame_rate);
-    EncoderH264(uint32_t width, uint32_t height, float frame_rate, uint32_t bit_rate);
+    EncoderH264(uint32_t width, uint32_t height, float frame_rate = 15, uint32_t bit_rate = 1000000);
     ~EncoderH264(void);
 
-    void setInput(Image::pixel_formats format, uint32_t width, uint32_t height);
-    void setInput(Image::pixel_formats format, uint32_t width, uint32_t height, enum rotation_t rot);
+    /* Input settings */
+    void setInput(Cam::Ptr cam, enum rotation_t rot = ROTATE_0);
+    void setInput(Image::pixel_formats format, uint32_t width, uint32_t height, enum rotation_t rot = ROTATE_0);
+
+    /* Encoding functions */
+    void start(void);
     Image::Ptr encode(Image::Ptr img);
+    void freeImage(uint16_t identifier);
+    std::vector<uint8_t> getSPS(void);
+    std::vector<uint8_t> getPPS(void);
+
+ //   uint32_t getWidth(void);
+ //   uint32_t getHeight(void);
 };
 
 #endif /* ENCODING_ENCODER_H264_H_ */

@@ -29,11 +29,8 @@
  * @param[in] width The width in pixels
  * @param[in] height The height in pixels
  */
-ImageBuffer::ImageBuffer(enum pixel_formats pixel_format, uint32_t width, uint32_t height) {
-    this->pixel_format = pixel_format;
-    this->width = width;
-    this->height = height;
-    this->size = Image::getSize();
+ImageBuffer::ImageBuffer(enum pixel_formats pixel_format, uint32_t width, uint32_t height):
+    Image(pixel_format, width, height, (getPixelSize() * width * height)) {
     this->data = malloc(this->size);
 }
 
@@ -46,11 +43,8 @@ ImageBuffer::ImageBuffer(enum pixel_formats pixel_format, uint32_t width, uint32
  * @param[in] height The height in pixels
  * @param[in] size The buffer size in bytes
  */
-ImageBuffer::ImageBuffer(enum pixel_formats pixel_format, uint32_t width, uint32_t height, uint32_t size) {
-    this->pixel_format = pixel_format;
-    this->width = width;
-    this->height = height;
-    this->size = size;
+ImageBuffer::ImageBuffer(enum pixel_formats pixel_format, uint32_t width, uint32_t height, uint32_t size):
+    Image(pixel_format, width, height, size) {
     this->data = malloc(this->size);
 }
 
@@ -63,23 +57,10 @@ ImageBuffer::ImageBuffer(enum pixel_formats pixel_format, uint32_t width, uint32
  * @param[in] height The height in pixels
  * @param[in] img The input byte buffer
  */
-ImageBuffer::ImageBuffer(enum pixel_formats pixel_format, uint32_t width, uint32_t height, std::vector<uint8_t> &img) {
-    this->pixel_format = pixel_format;
-    this->width = width;
-    this->height = height;
-    this->size = img.size();
+ImageBuffer::ImageBuffer(enum pixel_formats pixel_format, uint32_t width, uint32_t height, std::vector<uint8_t> &img):
+    Image(pixel_format, width, height, img.size()) {
     this->data = malloc(this->size);
     memcpy(this->data, img.data(), this->size);
-}
-
-/**
- * @brief Get the amount of bytes
- *
- * This will return the full image size in bytes.
- * @return The full image size in bytes
- */
-uint32_t ImageBuffer::getSize(void) {
-    return this->size;
 }
 
 /**

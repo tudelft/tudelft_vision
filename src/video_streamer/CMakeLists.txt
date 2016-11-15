@@ -9,5 +9,5 @@ if (";${SUPPORTED_PLATFORMS};" MATCHES ";${PLATFORM};")
     target_link_libraries(${PROJECT_NAME} tuv)
 
     add_custom_target(upload
-     COMMAND curl --upload-file ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${PROJECT_NAME} ftp://192.168.42.1/internal_000/paparazzi/)
+     COMMAND adb push ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${PROJECT_NAME} /data/ftp/internal_000/paparazzi/)
 endif ()

@@ -35,6 +35,7 @@ class Image {
         FMT_UYVY,       ///< UYVY with 2 bytes per pixel
         FMT_YUYV,       ///< YUYV with 2 bytes per pixel
         FMT_JPEG,       ///< A JPEG encoded image
+        FMT_H264,       ///< A H264 encoded image
     };
 
     typedef std::shared_ptr<Image> Ptr; ///< Shared pointer representation of the image
@@ -44,15 +45,22 @@ class Image {
     uint32_t height;                    ///< The image height
     enum pixel_formats pixel_format;	///< The image pixel format
     void *data;							///< The image data
+    uint32_t size;                      ///< The image size in bytes
+
+    Image(enum pixel_formats pixel_format, uint32_t width, uint32_t height, uint32_t size);
 
   public:
 
-    virtual uint16_t getPixelSize(void);
-    virtual uint32_t getWidth(void);
-    virtual uint32_t getHeight(void);
-    virtual uint32_t getSize(void);
+    /* Get usefull information */
+    enum pixel_formats getPixelFormat(void);
     virtual void *getData(void);
-    virtual void downsample(uint16_t downsample);
+    uint32_t getWidth(void);
+    uint32_t getHeight(void);
+    uint16_t getPixelSize(void);
+    uint32_t getSize(void);
+
+    /* Operations on images */
+    void downsample(uint16_t downsample);
 };
 
 #endif /* VISION_IMAGE_H_ */

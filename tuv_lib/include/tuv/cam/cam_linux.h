@@ -19,6 +19,7 @@
 #define CAM_LINUX_H_
 
 #include <tuv/cam/cam.h>
+#include <tuv/vision/image_ptr.h>
 #include <string>
 #include <vector>
 #include <linux/videodev2.h>
@@ -28,7 +29,7 @@
  *
  * This will setup a Linux based V4L2 camera.
  */
-class CamLinux: public Cam {
+class CamLinux: public Cam, public ImagePtr::Handler {
   protected:
     /** The buffer state */
     enum buffer_state_t {
@@ -73,7 +74,7 @@ class CamLinux: public Cam {
     void stop(void);
 
     Image::Ptr getImage(void);
-    void enqueueBuffer(uint16_t buffer_id);
+    void freeImage(uint16_t identifier);
 
     /* Settings */
     void setOutput(enum Image::pixel_formats format, uint32_t width, uint32_t height);

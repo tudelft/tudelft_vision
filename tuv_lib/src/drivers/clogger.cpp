@@ -25,42 +25,15 @@ CLogger CLogger::warn_logger("WARN");
 /**
  * @brief Create a new logger
  *
- * This will create a new logger with a specific name which by default
- * doesn't append functions and filenames.
- * @param[in] name The logger name
- */
-CLogger::CLogger(std::string name) {
-    this->name = name;
-    this->appendFunc = false;
-    this->appendFilename = false;
-}
-
-/**
- * @brief Create a new logger
- *
- * This will create a new logger with a specific name which by default
- * doesn't append filenames.
- * @param[in] name The logger name
- * @param[in] appendFunc Enable the appending of the function name
- */
-CLogger::CLogger(std::string name, bool appendFunc) {
-    this->name = name;
-    this->appendFunc = appendFunc;
-    this->appendFilename = false;
-}
-
-/**
- * @brief Create a new logger
- *
  * This will create a new logger with a specific name.
  * @param[in] name The logger name
  * @param[in] appendFunc Enable the appending of the function name
  * @param[in] appendFilename Enable the appending of filename with line number
  */
-CLogger::CLogger(std::string name, bool appendFunc, bool appendFilename) {
-    this->name = name;
-    this->appendFunc = appendFunc;
-    this->appendFilename = appendFilename;
+CLogger::CLogger(std::string name, bool appendFunc, bool appendFilename):
+    name(name),
+    appendFunc(appendFunc),
+    appendFilename(appendFilename) {
 }
 
 /**
@@ -73,6 +46,7 @@ CLogger::CLogger(std::string name, bool appendFunc, bool appendFilename) {
 void CLogger::addAllOutput(std::ostream *os) {
     CLogger::debug_logger.addOutput(os);
     CLogger::info_logger.addOutput(os);
+    CLogger::warn_logger.addOutput(os);
 }
 
 /**
@@ -99,7 +73,7 @@ void CLogger::addOutput(std::ostream *os) {
 std::string CLogger::format(const char *func, const char *file, const int line) {
     std::string str = name + " ";
     if(appendFunc)
-        str = str + "[" + func + "]";
+        str = str + "[" + func + "] ";
     if(appendFilename)
         str = str + "[" + file + ":" + std::to_string(line) + "] ";
     return str;

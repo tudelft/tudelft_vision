@@ -18,7 +18,6 @@
 #include "cam/cam_linux.h"
 
 #include "drivers/clogger.h"
-#include "vision/image_v4l2.h"
 #include <cstring>
 #include <stdexcept>
 #include <assert.h>
@@ -35,10 +34,7 @@
  * output formats.
  * @param device_name The linux device name including path (for example: /dev/video1)
  */
-CamLinux::CamLinux(std::string device_name) {
-    // Set the device name
-    this->device_name = device_name;
-
+CamLinux::CamLinux(std::string device_name) : device_name(device_name) {
     // Try to open the device
     this->openDevice();
 
@@ -149,7 +145,7 @@ Image::Ptr CamLinux::getImage(void) {
     CLOGGER_INFO("Got new image from " << device_name);
 
     // Create an image
-    return std::make_shared<ImageV4L2>(this, buffer->index, buffer->buf);
+    return std::make_shared<ImagePtr>(this, buffer->index, pixel_format, width, height, buffer->buf);
 }
 
 /**
@@ -445,15 +441,16 @@ void CamLinux::enqueueBuffer(struct buffer_t buffer) {
 }
 
 /**
- * @brief Enqueue a v4l2 buffer
+ * @brief Free the bufffer
  *
  * This will enqueue a buffer with a specific ID. This needs to be done when the
  * buffer isn't needed anymore such that the video device can use this buffer to
- * generate a new image.
- * @param[in] buffer_id The buffer id to enqueue
+ * generate a new image. This is called by the deletion of the generated image
+ * pointer.
+ * @param[in] identifier The buffer id to enqueue
  */
-void CamLinux::enqueueBuffer(uint16_t buffer_id) {
-    enqueueBuffer(buffers.at(buffer_id));
+void CamLinux::freeImage(uint16_t identifier) {
+    enqueueBuffer(buffers.at(identifier));
 }
 
 /**

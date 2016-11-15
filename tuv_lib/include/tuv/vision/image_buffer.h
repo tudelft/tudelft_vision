@@ -28,16 +28,11 @@
  * an object of this ImageBuffer class.
  */
 class ImageBuffer: public Image {
-  private:
-    uint32_t size;  ///< The size in bytes of the buffer
-
   public:
     ImageBuffer(enum pixel_formats pixel_format, uint32_t width, uint32_t height);
     ImageBuffer(enum pixel_formats pixel_format, uint32_t width, uint32_t height, uint32_t size);
     ImageBuffer(enum pixel_formats pixel_format, uint32_t width, uint32_t height, std::vector<uint8_t> &img);
     ~ImageBuffer(void);
-
-    uint32_t getSize(void);
 };
 
 #endif /* VISION_IMAGE_BUFFER_H_ */

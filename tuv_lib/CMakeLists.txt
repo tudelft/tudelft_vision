@@ -10,7 +10,8 @@ file(GLOB SRCS
     "src/drivers/clogger.cpp"
     "src/targets/target.cpp"
     "src/vision/image.cpp"
-    "src/vision/image_buffer.cpp")
+    "src/vision/image_buffer.cpp"
+    "src/vision/image_ptr.cpp")
 file(GLOB SRCS_UNIX
     "src/drivers/udpsocket.cpp"
     "src/encoding/encoder_rtp.cpp")
@@ -18,12 +19,12 @@ file(GLOB SRCS_LINUX
     "src/cam/cam_linux.cpp"
     "src/drivers/i2cbus.cpp"
     "src/drivers/mt9f002.cpp"
-    "src/targets/linux.cpp"
-    "src/vision/image_v4l2.cpp")
+    "src/targets/linux.cpp")
 file(GLOB SRCS_BEBOP
     "src/cam/cam_bebop.cpp"
     "src/drivers/isp.cpp"
     "src/encoding/encoder_h264.cpp"
+    "src/vision/image_h264.cpp"
     "src/targets/bebop.cpp")
 file(GLOB SRCS_JPEG
     "src/encoding/encoder_jpeg.cpp")
@@ -36,6 +37,7 @@ elseif (PLATFORM STREQUAL OSX)
     set(SRCS ${SRCS} ${SRCS_UNIX})
 elseif (PLATFORM STREQUAL Bebop)
     set(SRCS ${SRCS} ${SRCS_UNIX} ${SRCS_LINUX} ${SRCS_BEBOP})
+    set(LIBS ${LIBS} "h1enc")
 endif ()
 
 # Find libjpeg and add sources
@@ -43,6 +45,7 @@ find_package(JPEG)
 if (JPEG_FOUND)
     include_directories(${JPEG_INCLUDE_DIR})
     set(SRCS ${SRCS} ${SRCS_JPEG})
+    set(LIBS ${LIBS} ${JPEG_LIBRARIES})
 endif (JPEG_FOUND)
 
 # List all headers for the main headers file
@@ -59,7 +62,7 @@ add_custom_target(${PROJECT_NAME}_headers SOURCES ${HDRS})
 
 # Add library target
 add_library(${PROJECT_NAME} ${SRCS})
-target_link_libraries(${PROJECT_NAME} ${JPEG_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${LIBS})
 
 # Add all includes
 target_include_directories(${PROJECT_NAME} PUBLIC

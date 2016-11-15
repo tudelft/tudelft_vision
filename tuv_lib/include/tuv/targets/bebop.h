@@ -19,6 +19,8 @@
 #define TARGETS_BEBOP_H_
 
 #include <tuv/targets/linux.h>
+#include <stdint.h>
+#include <map>
 
 /**
  * @brief Bebop and Bebop 2
@@ -27,18 +29,21 @@
  */
 class Bebop : public Linux {
   private:
-    int pagemap_fd;                 ///< The memory pagemap file pointer
+    static int pagemap_fd;                          ///< The memory pagemap file pointer
+    static std::map<uintptr_t, uint64_t> mem_map;   ///< Virtual to physical address mapping cache (Only contigious ones)
 
     void openPagemap(void);
     void closePagemap(void);
-    void virt2phys(uint64_t vaddr, uint64_t *paddr);
-    bool checkContiguity(uint64_t vaddr, uint64_t size, uint64_t *paddr);
 
   public:
     Bebop(void);
     ~Bebop(void);
 
     Cam::Ptr getCamera(uint32_t id);
+
+    /* Usefull functtions */
+    static void virt2phys(uintptr_t vaddr, uint64_t *paddr);
+    static bool checkContiguity(uintptr_t vaddr, uint64_t size, uint64_t *paddr, bool cache = false);
 };
 
 #endif /* TARGETS_BEBOP_H_ */

@@ -51,8 +51,8 @@ class CLogger {
   private:
     std::vector<std::ostream *> outputs;        ///< Logger output streams
     std::string name;                           ///< Logger name (Debug, Info, ...)
-    bool appendFilename;                        ///< Append filename to debug string
     bool appendFunc;                            ///< Append function name to debug string
+    bool appendFilename;                        ///< Append filename to debug string
 
   public:
     static CLogger debug_logger;                ///< Debug logger
@@ -62,9 +62,7 @@ class CLogger {
     static void addAllOutput(std::ostream *os);
 
     /* Per logger operations */
-    CLogger(std::string name);
-    CLogger(std::string name, bool appendFilename);
-    CLogger(std::string name, bool appendFunc, bool appendFilename);
+    CLogger(std::string name, bool appendFunc = false, bool appendFilename = false);
     std::string format(const char* func, const char *file, const int line);
     void addOutput(std::ostream *os);
 

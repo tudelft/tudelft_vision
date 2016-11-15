@@ -40,17 +40,17 @@ MT9F002::MT9F002(I2CBus *i2c_bus, enum interfaces interface, struct pll_config_t
     this->pll_config = pll_config;
 
     // Default values
-    target_exposure = 60;
+    target_exposure = 50;
     target_fps = 15;
 
     // Default configuration
     res_config.offset_x       = 114;
     res_config.offset_y       = 106;
-    res_config.output_width   = 720;
-    res_config.output_height  = 1080;
+    res_config.output_width   = 1088;
+    res_config.output_height  = 720;
     res_config.output_scaler  = 1.0;
-    res_config.sensor_width   = 720;
-    res_config.sensor_height  = 1080;
+    res_config.sensor_width   = 1088;
+    res_config.sensor_height  = 720;
 
     blank_config.min_line_blanking_pck              = 1316;
     blank_config.min_line_length_pck                = 1032;
@@ -930,8 +930,8 @@ void MT9F002::calculateResolution(void) {
  *
  * This will set the correct output width and height in pixels of the MT9F002 CMOS sensor. Based
  * on the cropping the new skipping and scaling is calculted to achieve this output width and height.
- * @param width The output width in pixels (must be even to make sure e have a full GRGB pattern)
- * @param height The output height in pixels (must be even to make sure e have a full GRGB pattern)
+ * @param width The output width in pixels (must be even to make sure we have a full GRGB pattern)
+ * @param height The output height in pixels (must be even to make sure we have a full GRGB pattern)
  */
 void MT9F002::setOutput(uint16_t width, uint16_t height) {
     assert(width%2 == 0);

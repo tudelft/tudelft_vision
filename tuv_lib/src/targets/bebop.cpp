@@ -26,7 +26,7 @@
 #include <fcntl.h>
 #include <stdexcept>
 
-
+// Usefull bit a page operators for memory
 #define BIT(i)          ((uint64_t) 1 << i)             ///< Sets a bit (2^i)
 #define PAGE_SHIFT      12                              ///< How much bits contain the memory page number
 #define PAGE_SIZE       (1<<PAGE_SHIFT)                 ///< Size of the PAGE
@@ -36,13 +36,16 @@
 #define PAGE_SWAPPED    BIT(62)                         ///< If the page is swapped
 #define PAGE_PFN_MASK   (((uint64_t)1<< 55) -1)         ///< Mask for the page number
 
+// Initialize the pagemap file pointer and memory map cache
+int Bebop::pagemap_fd = -1;
+std::map<uintptr_t, uint64_t> Bebop::mem_map;
+
 /**
  * @brief Initialize the Bebop platform
  *
  * This will open the pagemap for memory mapping to physical addresses.
  */
-Bebop::Bebop(void) {
-    CLogger::addAllOutput(&std::cout);
+Bebop::Bebop(void): Linux() {
     openPagemap();
 }
 
@@ -96,6 +99,7 @@ Cam::Ptr Bebop::getCamera(uint32_t id) {
  */
 void Bebop::openPagemap(void) {
     std::string filename = "/proc/" + std::to_string(getpid()) + "/pagemap";
+    CLOGGER_DEBUG("Opening pagemap " << filename);
 
     pagemap_fd = open(filename.c_str(), O_RDONLY);
     if(pagemap_fd < 0) {
@@ -109,7 +113,7 @@ void Bebop::openPagemap(void) {
  * This will close the pagemap file
  */
 void Bebop::closePagemap(void) {
-    close(pagemap_fd);
+    close(Bebop::pagemap_fd);
 }
 
 /**
@@ -120,7 +124,7 @@ void Bebop::closePagemap(void) {
  * @param[in] vaddr The virtual address we want the physical address for
  * @param[out] paddr The physical address of the virtual address
  */
-void Bebop::virt2phys(uint64_t vaddr, uint64_t *paddr) {
+void Bebop::virt2phys(uintptr_t vaddr, uint64_t *paddr) {
     // First seek to the correct page
     uint64_t index = (vaddr >> PAGE_SHIFT) * sizeof(uint64_t);
     if (lseek64(pagemap_fd, index, SEEK_SET) != (off64_t)index) {
@@ -148,15 +152,27 @@ void Bebop::virt2phys(uint64_t vaddr, uint64_t *paddr) {
  * @param[in] vaddr The virtual memory address
  * @param[in] size The size of the memory to check
  * @param[out] paddr The physical address of the virtual address
+ * @param[in] cache Cache the result in a hashmap
  * @return If the physical memory is contigious
  */
-bool Bebop::checkContiguity(uint64_t vaddr, uint64_t size, uint64_t *paddr) {
+bool Bebop::checkContiguity(uintptr_t vaddr, uint64_t size, uint64_t *paddr, bool cache) {
+    // First check in cache
+    if(cache) {
+        auto cache_r = mem_map.find(vaddr);
+
+        // Found in cache return result
+        if(cache_r != mem_map.end()) {
+            *paddr = cache_r->second;
+            return true;
+        }
+    }
+
     // First calculate the physical address
     virt2phys(vaddr, paddr);
 
     // Align to a page
-    uint64_t curr_size = PAGE_SIZE - (*paddr & PAGE_MASK);
-    uint64_t vcurrent = vaddr & ~PAGE_MASK;
+    uintptr_t curr_size = PAGE_SIZE - (*paddr & PAGE_MASK);
+    uintptr_t vcurrent = vaddr & ~PAGE_MASK;
     uint64_t pnext = (*paddr & ~PAGE_MASK) + PAGE_SIZE;
 
     // Check until checked whole size
@@ -171,6 +187,11 @@ bool Bebop::checkContiguity(uint64_t vaddr, uint64_t size, uint64_t *paddr) {
         } else {
             return false;
         }
+    }
+
+    // Save to cache
+    if(cache) {
+        mem_map[vaddr] = *paddr;
     }
 
     return true;
