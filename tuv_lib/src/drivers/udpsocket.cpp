@@ -77,6 +77,7 @@ UDPSocket::UDPSocket(std::string host, uint16_t port_in, uint16_t port_out) {
  */
 void UDPSocket::transmit(std::vector<uint8_t> data) {
     ssize_t cnt = sendto(fd, data.data(), data.size(), MSG_DONTWAIT, (struct sockaddr *)&addr_out, sizeof(addr_out));
+    (void) cnt;
     assert(cnt > 0);
     assert((uint32_t)cnt == data.size());
 }

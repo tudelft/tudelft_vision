@@ -31,10 +31,11 @@
  * @param[in] *data Pointer to the data buffer
  */
 ImagePtr::ImagePtr(Handler *handler, uint32_t identifier, enum pixel_formats pixel_format, uint32_t width, uint32_t height, void *data):
-    Image(pixel_format, width, height, (getPixelSize() * width * height)),
+    Image(pixel_format, width, height),
     handler(handler),
     identifier(identifier) {
     this->data = data;
+    this->size = (getPixelSize() * width * height);
 }
 
 /**

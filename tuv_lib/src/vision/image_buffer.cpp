@@ -30,8 +30,9 @@
  * @param[in] height The height in pixels
  */
 ImageBuffer::ImageBuffer(enum pixel_formats pixel_format, uint32_t width, uint32_t height):
-    Image(pixel_format, width, height, (getPixelSize() * width * height)) {
+    Image(pixel_format, width, height) {
     this->data = malloc(this->size);
+    this->size = (getPixelSize() * width * height);
 }
 
 /**

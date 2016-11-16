@@ -182,7 +182,7 @@ Image::Ptr EncoderH264::encode(Image::Ptr img) {
         throw std::runtime_error("Hantro H264 encoder could not encode frame with error code: " + std::to_string(ret));
     }
 
-    CLOGGER_DEBUG("Image " << output_buffer->index << " encoded (frame: " << frame_cnt << ", intra: " << ((intra_cnt == 0)? 1 : 0));
+    CLOGGER_DEBUG("Image " << output_buffer->index << " encoded (frame: " << frame_cnt << ", intra: " << ((intra_cnt == 0)? 1 : 0) << ")");
     frame_cnt++;
     intra_cnt = (intra_cnt + 1) % (uint32_t)output_cfg.frame_rate;
 
@@ -239,7 +239,7 @@ void EncoderH264::openEncoder(void) {
 
     /* Check if we have an encoder and get the version */
     H264EncBuild encBuild = H264EncGetBuild();
-    if (encBuild.hwBuild == EWL_ERROR){
+    if (encBuild.hwBuild == (uint32_t)EWL_ERROR){
         throw std::runtime_error("Could not find the Hantro H264 encoder");
     }
     CLOGGER_INFO("Found hantro encoder (HW: " << encBuild.hwBuild << " SW: " << encBuild.swBuild << ")");

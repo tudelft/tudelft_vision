@@ -47,7 +47,7 @@ class Image {
     void *data;							///< The image data
     uint32_t size;                      ///< The image size in bytes
 
-    Image(enum pixel_formats pixel_format, uint32_t width, uint32_t height, uint32_t size);
+    Image(enum pixel_formats pixel_format, uint32_t width, uint32_t height, uint32_t size = 0);
 
   public:
 
