@@ -42,84 +42,84 @@ class ISP {
 
     /** ISP registers and the values */
     struct avi_isp_registers {
-        struct avi_isp_vlformat_32to40_regs vlformat_32to40;
-        struct avi_isp_chain_bayer_inter_regs bayer_inter;
-        struct avi_isp_pedestal_regs pedestal;
-        struct avi_isp_denoising_regs denoising;
-        struct avi_isp_bayer_regs bayer;
-        struct avi_isp_color_correction_regs color_correction;
-        struct avi_isp_vlformat_40to32_regs vlformat_40to32;
-        struct avi_isp_gamma_corrector_regs gamma_corrector;
-        struct avi_isp_gamma_corrector_ry_lut_regs ry_lut;
-        struct avi_isp_gamma_corrector_gu_lut_regs gu_lut;
-        struct avi_isp_gamma_corrector_bv_lut_regs bv_lut;
-        struct avi_isp_chroma_regs chroma;
-        struct avi_isp_chain_yuv_inter_regs yuv_inter;
+        struct avi_isp_vlformat_32to40_regs vlformat_32to40;    ///< 32 bit to 40 bit converter registers
+        struct avi_isp_chain_bayer_inter_regs bayer_inter;      ///< Bayer chain registers
+        struct avi_isp_pedestal_regs pedestal;                  ///< Pedestal registers
+        struct avi_isp_denoising_regs denoising;                ///< Denoising registers
+        struct avi_isp_bayer_regs bayer;                        ///< Debayering registers
+        struct avi_isp_color_correction_regs color_correction;  ///< Color correction registers
+        struct avi_isp_vlformat_40to32_regs vlformat_40to32;    ///< 40 bit to 32 bit converver registers
+        struct avi_isp_gamma_corrector_regs gamma_corrector;    ///< Gamma corrector registers
+        struct avi_isp_gamma_corrector_ry_lut_regs ry_lut;      ///< Gamma corrector RY list registers
+        struct avi_isp_gamma_corrector_gu_lut_regs gu_lut;      ///< Gamma corrector GU list registers
+        struct avi_isp_gamma_corrector_bv_lut_regs bv_lut;      ///< Gamma corrector BF list registers
+        struct avi_isp_chroma_regs chroma;                      ///< Chroma registers
+        struct avi_isp_chain_yuv_inter_regs yuv_inter;          ///< YUV chain registers
     };
     struct avi_isp_registers reg;   ///< ISP register values
 
     /** ISP internal configuration */
     struct avi_isp_config {
-        uint8_t cfa;
+        uint8_t cfa;            ///< CFA configuration (Bayer pixel order)
 
         // Bayer chain
-        bool bayer_ped;
-        bool bayer_grim;
-        bool bayer_rip;
-        bool bayer_denoise;
-        bool bayer_lsc;
-        bool bayer_ca;
-        bool bayer_demos;
-        bool bayer_colm;
+        bool bayer_ped;         ///< Bayer Pedestal enabling
+        bool bayer_grim;        ///< Bayer Green Imbalance enabling
+        bool bayer_rip;         ///< Bayer RIP enabling
+        bool bayer_denoise;     ///< Bayer Denosing enabling
+        bool bayer_lsc;         ///< Bayer Lens Shade Corrector enabling
+        bool bayer_ca;          ///< Bayer Chromatic Aberration enabling
+        bool bayer_demos;       ///< Bayer Demosaicking enabling
+        bool bayer_colm;        ///< Bayer Color Matrix enabling
 
         // pedestal
-        uint16_t pedestal_r;
-        uint16_t pedestal_gb;
-        uint16_t pedestal_gr;
-        uint16_t pedestal_b;
+        uint16_t pedestal_r;    ///< Pedestal value for the Red channel
+        uint16_t pedestal_gb;   ///< Pedestal value for the Green-Blue channel
+        uint16_t pedestal_gr;   ///< Pedestal value for the Green-Red channel
+        uint16_t pedestal_b;    ///< Pedestal value for the Blue channel
 
         // Denoising
-        std::vector<uint8_t> denoise_red;
-        std::vector<uint8_t> denoise_green;
-        std::vector<uint8_t> denoise_blue;
+        std::vector<uint8_t> denoise_red;   ///< Denoising Red channel vector
+        std::vector<uint8_t> denoise_green; ///< Denoising Green channel vector
+        std::vector<uint8_t> denoise_blue;  ///< Denoising Blue channel vector
 
         // Demosaicking
-        uint16_t demos_threshold_low;
-        uint16_t demos_threshold_high;
+        uint16_t demos_threshold_low;   ///< Demosaicking lower threshold
+        uint16_t demos_threshold_high;  ///< Demosaicking upper threshold
 
         // Color correction
-        std::vector<std::vector<float>> cc_matrix;
-        std::vector<uint32_t> cc_offin;
-        std::vector<uint32_t> cc_offout;
-        std::vector<uint32_t> cc_clipmin;
-        std::vector<uint32_t> cc_clipmax;
+        std::vector<std::vector<float>> cc_matrix;  ///< Color correction matrix
+        std::vector<uint32_t> cc_offin;     ///< Color correction input offsets
+        std::vector<uint32_t> cc_offout;    ///< Color correction output offsets
+        std::vector<uint32_t> cc_clipmin;   ///< Color correction clipping minimums
+        std::vector<uint32_t> cc_clipmax;   ///< Color correction clipping maximums
 
         // Gamma corrector
-        bool gc_enable;
-        bool gc_palette;
-        bool gc_10bit;
-        std::vector<uint16_t> gc_rlut;
-        std::vector<uint16_t> gc_glut;
-        std::vector<uint16_t> gc_blut;
+        bool gc_enable;     ///< Gamma correction enabling
+        bool gc_palette;    ///< Gamma correction color palette
+        bool gc_10bit;      ///< Gamma correction operating at 10bit channels
+        std::vector<uint16_t> gc_rlut;  ///< Gamma correction red illuminance vector
+        std::vector<uint16_t> gc_glut;  ///< Gamma correction green illuminance vector
+        std::vector<uint16_t> gc_blut;  ///< Gamma correction blue illuminance vector
 
         // Color space conversion
-        std::vector<std::vector<float>> csc_matrix;
-        std::vector<uint32_t> csc_offin;
-        std::vector<uint32_t> csc_offout;
-        std::vector<uint32_t> csc_clipmin;
-        std::vector<uint32_t> csc_clipmax;
+        std::vector<std::vector<float>> csc_matrix;     ///< Color space conversion matrix
+        std::vector<uint32_t> csc_offin;        ///< Color space conversion input offsets
+        std::vector<uint32_t> csc_offout;       ///< Color space conversion output offsets
+        std::vector<uint32_t> csc_clipmin;      ///< Color space conversion clipping minimums
+        std::vector<uint32_t> csc_clipmax;      ///< Color space conversion clipping maximums
 
         // YUV Chain
-        bool yuv_ee_crf;
-        bool yuv_i3d_lut;
-        bool yuv_drop;
+        bool yuv_ee_crf;    ///< YUV chain Edge Enhancement enabling
+        bool yuv_i3d_lut;   ///< YUV chain i3d enabling
+        bool yuv_drop;      ///< YUV Drop enabling
     };
     struct avi_isp_config config;   ///< ISP configuration values
 
     /* Register access functions */
     void memcpy_to_registers(unsigned long addr, const void *reg_base, size_t s);
     void memcpy_from_registers(void *reg_base, unsigned long addr, size_t s);
-    AVI_DEFINE_NODE(EXPAND_AS_PROTOTYPE);
+    AVI_DEFINE_NODE(EXPAND_AS_PROTOTYPE); ///< Expand all ISP register functions
 
     /* Internal conversion functions */
     uint16_t floatToQ2_11(float var);

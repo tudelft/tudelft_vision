@@ -31,7 +31,7 @@
  * configuration inclused exposure, fps etc.
  * @param[in] i2c_bus The i2c bus which the MT9F002 CMOS chip is connected to
  * @param[in] interface The type of interface the MT9F002 data lines are connected to
- * @param[in] The PLL configuration values for the MT9F002 chip
+ * @param[in] pll_config The PLL configuration values for the MT9F002 chip
  */
 MT9F002::MT9F002(I2CBus *i2c_bus, enum interfaces interface, struct pll_config_t pll_config) {
     // Save the i2c bus, interface and pll config

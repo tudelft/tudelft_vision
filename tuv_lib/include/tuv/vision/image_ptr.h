@@ -37,6 +37,12 @@ class ImagePtr: public Image {
      */
     class Handler {
       public:
+        /**
+         * @brief Free the image buffer
+         *
+         * This is an abstract definition for the process of freeing the image buffer.
+         * @param identifier The identifier of the image buffer
+         */
         virtual void freeImage(uint16_t identifier) = 0;
     };
 

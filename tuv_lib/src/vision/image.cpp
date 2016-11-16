@@ -28,6 +28,7 @@
  * @param pixel_format The image pixel format (ordering of channels per pixel)
  * @param width The image width in pixels
  * @param height The image height in pixels
+ * @param size The image size in bytes
  */
 Image::Image(enum pixel_formats pixel_format, uint32_t width, uint32_t height, uint32_t size):
     width(width),

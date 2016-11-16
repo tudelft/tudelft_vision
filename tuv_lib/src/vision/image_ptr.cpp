@@ -21,9 +21,13 @@
  * @brief Create a new image pointer
  *
  * This will create a new image based on a data pointer which is managed by the handler. The
- * handler is the owner of the data pointer
- * @param[in] *cam The V4L2 camera which took the image
- * @param[in] buffer_index The index of the V4L2 camera buffer
+ * handler is the owner of the data pointer.
+ * The size of the image is determined by the pixel format.
+ * @param[in] *handler The image handler instance (owner)
+ * @param[in] identifier The identifier for the image handler
+ * @param[in] pixel_format The pixel format (order of channels per pixel)
+ * @param[in] width The image pixel width
+ * @param[in] height The image pixel height
  * @param[in] *data Pointer to the data buffer
  */
 ImagePtr::ImagePtr(Handler *handler, uint32_t identifier, enum pixel_formats pixel_format, uint32_t width, uint32_t height, void *data):
@@ -37,11 +41,15 @@ ImagePtr::ImagePtr(Handler *handler, uint32_t identifier, enum pixel_formats pix
  * @brief Create a new image pointer
  *
  * This will create a new image based on a data pointer which is managed by the handler. The
- * handler is the owner of the data pointer
- * @param[in] *cam The V4L2 camera which took the image
- * @param[in] buffer_index The index of the V4L2 camera buffer
+ * handler is the owner of the data pointer.
+ * This should only be used if the size of the image can't be determined by the pixel format.
+ * @param[in] *handler The image handler instance (owner)
+ * @param[in] identifier The identifier for the image handler
+ * @param[in] pixel_format The pixel format (order of channels per pixel)
+ * @param[in] width The image pixel width
+ * @param[in] height The image pixel height
  * @param[in] *data Pointer to the data buffer
- * @param[in] size The size of the data buffer in bytes
+ * @param[in] size The image size in bytes
  */
 ImagePtr::ImagePtr(Handler *handler, uint32_t identifier, enum pixel_formats pixel_format, uint32_t width, uint32_t height, void *data, uint32_t size):
     Image(pixel_format, width, height, size),
