@@ -112,8 +112,8 @@ class EncoderH264: public ImagePtr::Handler {
     std::vector<uint8_t> getSPS(void);
     std::vector<uint8_t> getPPS(void);
 
- //   uint32_t getWidth(void);
- //   uint32_t getHeight(void);
+//   uint32_t getWidth(void);
+//   uint32_t getHeight(void);
 };
 
 #endif /* ENCODING_ENCODER_H264_H_ */

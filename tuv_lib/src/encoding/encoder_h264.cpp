@@ -177,8 +177,7 @@ Image::Ptr EncoderH264::encode(Image::Ptr img) {
         CLOGGER_WARN("H264 encoder has a buffer overflow and couldn't generate an image");
         output_buffer->is_free = true;
         return nullptr;
-    }
-    else if(ret != H264ENC_FRAME_READY) {
+    } else if(ret != H264ENC_FRAME_READY) {
         throw std::runtime_error("Hantro H264 encoder could not encode frame with error code: " + std::to_string(ret));
     }
 
@@ -239,7 +238,7 @@ void EncoderH264::openEncoder(void) {
 
     /* Check if we have an encoder and get the version */
     H264EncBuild encBuild = H264EncGetBuild();
-    if (encBuild.hwBuild == (uint32_t)EWL_ERROR){
+    if (encBuild.hwBuild == (uint32_t)EWL_ERROR) {
         throw std::runtime_error("Could not find the Hantro H264 encoder");
     }
     CLOGGER_INFO("Found hantro encoder (HW: " << encBuild.hwBuild << " SW: " << encBuild.swBuild << ")");
@@ -405,15 +404,15 @@ void EncoderH264::streamStart(void) {
  */
 H264EncPictureType EncoderH264::getEncPictureType(Image::pixel_formats format) {
     switch(format) {
-        case Image::FMT_UYVY:
-            return H264ENC_YUV422_INTERLEAVED_UYVY;
+    case Image::FMT_UYVY:
+        return H264ENC_YUV422_INTERLEAVED_UYVY;
 
-        case Image::FMT_YUYV:
-            return H264ENC_YUV422_INTERLEAVED_YUYV;
+    case Image::FMT_YUYV:
+        return H264ENC_YUV422_INTERLEAVED_YUYV;
 
-        default:
-            throw std::runtime_error("Invalid input picture type for the Hantro H264");
-            return H264ENC_YUV420_PLANAR;
+    default:
+        throw std::runtime_error("Invalid input picture type for the Hantro H264");
+        return H264ENC_YUV420_PLANAR;
     }
 }
 
@@ -426,18 +425,18 @@ H264EncPictureType EncoderH264::getEncPictureType(Image::pixel_formats format) {
  */
 H264EncPictureRotation EncoderH264::getEncPictureRotation(enum rotation_t rot) {
     switch(rot) {
-        case ROTATE_0:
-            return H264ENC_ROTATE_0;
+    case ROTATE_0:
+        return H264ENC_ROTATE_0;
 
-        case ROTATE_90L:
-            return H264ENC_ROTATE_90L;
+    case ROTATE_90L:
+        return H264ENC_ROTATE_90L;
 
-        case ROTATE_90R:
-            return H264ENC_ROTATE_90R;
+    case ROTATE_90R:
+        return H264ENC_ROTATE_90R;
 
-        default:
-            throw std::runtime_error("Invalid input rotation type for the Hantro H264");
-            return H264ENC_ROTATE_0;
+    default:
+        throw std::runtime_error("Invalid input rotation type for the Hantro H264");
+        return H264ENC_ROTATE_0;
     }
 }
 
