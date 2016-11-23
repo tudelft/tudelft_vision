@@ -32,7 +32,8 @@ class ISP {
   public:
     /** YUV Statistics outputs */
     struct statistics_t {
-        bool done;                      ///< Set to true when having correct stats
+        bool done;                      ///< When we got valid measurement
+        bool error;                     ///< When we received an error
         std::vector<uint32_t> awb_sum;  ///< per channel sum of the pixels (YUV channels)
         uint32_t nb_y;                  ///< Amount of valid Y pixels used in the sum
         uint32_t nb_grey;               ///< Amount of grey pixels (counted with the threshold)

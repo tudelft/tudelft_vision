@@ -58,17 +58,16 @@ void CamBebop::start(void) {
 #define MAX_HIST_Y 235
 Image::Ptr CamBebop::getImage(void) {
     Image::Ptr img = CamLinux::getImage();
-
     struct ISP::statistics_t stats = isp.getYUVStatistics();
-    if(stats.done) {
+
+    if(stats.done && !stats.error) {
         // Auto exposure
         uint32_t cdf[256];
-
         cdf[0] = stats.hist_y[0];
         for(uint16_t i = 1; i < 256; i++)
             cdf[i] = cdf[i-1] + stats.hist_y[i];
 
-        uint32_t bright_pixels = cdf[MAX_HIST_Y - 1] - cdf[MAX_HIST_Y - 20];    // Top 20 bins
+        uint32_t bright_pixels = cdf[MAX_HIST_Y - 1] - cdf[MAX_HIST_Y - 21];    // Top 20 bins
         uint32_t saturated_pixels = cdf[MAX_HIST_Y - 1] - cdf[MAX_HIST_Y - 6];  // Top 5 bins
         uint32_t target_bright_pixels = stats.nb_y / 20;  // 5%
         uint32_t max_saturated_pixels = stats.nb_y / 100; // 1%

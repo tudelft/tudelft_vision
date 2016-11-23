@@ -935,15 +935,11 @@ struct ISP::statistics_t ISP::getYUVStatistics(void) {
 
     // Set the statistics
     struct statistics_t stat;
+    stat.done = stats_yuv.measure_status.done;
+    stat.error = stats_yuv.measure_status.error;
     stat.awb_sum = {stats_yuv.awb_sum_y.awb_sum_y, stats_yuv.awb_sum_u.awb_sum_u, stats_yuv.awb_sum_v.awb_sum_v};
     stat.nb_y = stats_yuv.ae_nb_valid_y.nb_valid_y;
     stat.nb_grey = stats_yuv.awb_nb_grey_pixels.nb_grey_pixels;
-
-    // Check for errors
-    if(stats_yuv.measure_status.error)
-        stat.done = false;
-    else
-        stat.done = true;
 
     // Fill the histogram
     stat.hist_y.resize(256);

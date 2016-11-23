@@ -79,7 +79,7 @@ void UDPSocket::transmit(std::vector<uint8_t> &data) {
     uint8_t tries = 0;
     ssize_t bytes_send = 0;
 
-    while(bytes_send >= 0 && (uint32_t)bytes_send != data.size() && tries++ < 10) {
+    while((bytes_send < 0 || (uint32_t)bytes_send != data.size()) && tries++ < 10) {
         bytes_send = sendto(fd, data.data(), data.size(), MSG_DONTWAIT, (struct sockaddr *)&addr_out, sizeof(addr_out));
     }
     assert(bytes_send > 0);
