@@ -41,6 +41,7 @@ class CamBebop: public CamLinux {
     CamBebop(void);
 
     void start(void);
+    Image::Ptr getImage(void);
     void setOutput(enum Image::pixel_formats format, uint32_t width, uint32_t height);
     void setCrop(uint32_t left, uint32_t top, uint32_t width, uint32_t height);
 };

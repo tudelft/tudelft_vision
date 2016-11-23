@@ -75,11 +75,15 @@ UDPSocket::UDPSocket(std::string host, uint16_t port_in, uint16_t port_out) {
  * This will transmit data to the UDP output
  * @param data The data to transmit
  */
-void UDPSocket::transmit(std::vector<uint8_t> data) {
-    ssize_t cnt = sendto(fd, data.data(), data.size(), MSG_DONTWAIT, (struct sockaddr *)&addr_out, sizeof(addr_out));
-    (void) cnt;
-    assert(cnt > 0);
-    assert((uint32_t)cnt == data.size());
+void UDPSocket::transmit(std::vector<uint8_t> &data) {
+    uint8_t tries = 0;
+    ssize_t bytes_send = 0;
+
+    while(bytes_send >= 0 && (uint32_t)bytes_send != data.size() && tries++ < 10) {
+        bytes_send = sendto(fd, data.data(), data.size(), MSG_DONTWAIT, (struct sockaddr *)&addr_out, sizeof(addr_out));
+    }
+    assert(bytes_send > 0);
+    assert((uint32_t)bytes_send == data.size());
 }
 
 /**

@@ -17,7 +17,11 @@
 
 #include "cam/cam_bebop.h"
 
+#include "drivers/clogger.h"
+#include "drivers/isp.h"
+#include "drivers/mt9f002.h"
 #include <linux/v4l2-mediabus.h>
+#include <math.h>
 
 /**
  * @brief Initialize the Bebop camera
@@ -42,6 +46,91 @@ void CamBebop::start(void) {
 
     // Configure the ISP
     isp.configure(fd);
+    isp.setCrop(0, 0, 800, 608);
+}
+
+/**
+ * @brief Get a new image
+ *
+ * Get a new image from the front camera.
+ * @return The image
+ */
+#define MAX_HIST_Y 235
+Image::Ptr CamBebop::getImage(void) {
+    Image::Ptr img = CamLinux::getImage();
+
+    struct ISP::statistics_t stats = isp.getYUVStatistics();
+    if(stats.done) {
+        // Auto exposure
+        uint32_t cdf[256];
+
+        cdf[0] = stats.hist_y[0];
+        for(uint16_t i = 1; i < 256; i++)
+            cdf[i] = cdf[i-1] + stats.hist_y[i];
+
+        uint32_t bright_pixels = cdf[MAX_HIST_Y - 1] - cdf[MAX_HIST_Y - 20];    // Top 20 bins
+        uint32_t saturated_pixels = cdf[MAX_HIST_Y - 1] - cdf[MAX_HIST_Y - 6];  // Top 5 bins
+        uint32_t target_bright_pixels = stats.nb_y / 20;  // 5%
+        uint32_t max_saturated_pixels = stats.nb_y / 100; // 1%
+        float adjustment = 1.0f;
+
+        if (saturated_pixels + max_saturated_pixels / 10 > max_saturated_pixels) {
+          // Fix saturated pixels
+          adjustment = 1.0f - (float)saturated_pixels / stats.nb_y;
+          adjustment *= adjustment * adjustment;  // speed up
+        } else if (bright_pixels + target_bright_pixels / 10 < target_bright_pixels) {
+          // increase brightness to try and hit the desired number of well exposed pixels
+          int l = MAX_HIST_Y - 1;
+          while (bright_pixels < target_bright_pixels && l > 0) {
+            bright_pixels += cdf[l];
+            bright_pixels -= cdf[l - 1];
+            l--;
+          }
+
+          adjustment = (float)MAX_HIST_Y / (l + 1);
+        } else if (bright_pixels - target_bright_pixels / 10 > target_bright_pixels) {
+          // decrease brightness to try and hit the desired number of well exposed pixels
+          int l = MAX_HIST_Y - 20;
+          while (bright_pixels > target_bright_pixels && l < MAX_HIST_Y) {
+            bright_pixels -= cdf[l];
+            bright_pixels += cdf[l - 1];
+            l++;
+          }
+
+          adjustment = (float)(MAX_HIST_Y - 20) / l;
+          adjustment *= adjustment;   // speedup
+        }
+
+        // Calculate exposure
+        adjustment = std::min(std::max(adjustment, 1/16.0f), 4.0f);
+        mt9f002.setExposure(mt9f002.getExposure() * adjustment);
+
+        // Calculate AWB
+        struct MT9F002::gain_config_t gains = mt9f002.getGains();
+        float avgU = ((float) stats.awb_sum[1] / (float) stats.nb_grey) / 240. - 0.5;
+        float avgV = ((float) stats.awb_sum[2] / (float) stats.nb_grey) / 240. - 0.5;
+        float threshold = 0.002f;
+        float gain = 0.5;
+        bool changed = false;
+
+        if (fabs(avgU) > threshold) {
+          gains.blue -= gain * avgU;
+          changed = true;
+        }
+        if (fabs(avgV) > threshold) {
+          gains.red -= gain * avgV;
+          changed = true;
+        }
+
+        if (changed) {
+          gains.blue = std::min(std::max(gains.blue, 2.0f), 75.0f);
+          gains.red = std::min(std::max(gains.red, 2.0f), 75.0f);
+          //mt9f002.setGains(gains);
+        }
+    }
+
+    isp.requestYUVStatistics();
+    return img;
 }
 
 /**
@@ -80,5 +169,5 @@ void CamBebop::setOutput(enum Image::pixel_formats format, uint32_t width, uint3
  * @param[in] height The output height in pixels
  */
 void CamBebop::setCrop(uint32_t left, uint32_t top, uint32_t width, uint32_t height) {
-    // Set the camera crop
+
 }

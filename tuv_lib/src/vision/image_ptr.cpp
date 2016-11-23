@@ -30,7 +30,7 @@
  * @param[in] height The image pixel height
  * @param[in] *data Pointer to the data buffer
  */
-ImagePtr::ImagePtr(Handler *handler, uint32_t identifier, enum pixel_formats pixel_format, uint32_t width, uint32_t height, void *data):
+ImagePtr::ImagePtr(Handler *handler, uint16_t identifier, enum pixel_formats pixel_format, uint32_t width, uint32_t height, void *data):
     Image(pixel_format, width, height),
     handler(handler),
     identifier(identifier) {
@@ -52,7 +52,7 @@ ImagePtr::ImagePtr(Handler *handler, uint32_t identifier, enum pixel_formats pix
  * @param[in] *data Pointer to the data buffer
  * @param[in] size The image size in bytes
  */
-ImagePtr::ImagePtr(Handler *handler, uint32_t identifier, enum pixel_formats pixel_format, uint32_t width, uint32_t height, void *data, uint32_t size):
+ImagePtr::ImagePtr(Handler *handler, uint16_t identifier, enum pixel_formats pixel_format, uint32_t width, uint32_t height, void *data, uint32_t size):
     Image(pixel_format, width, height, size),
     handler(handler),
     identifier(identifier) {

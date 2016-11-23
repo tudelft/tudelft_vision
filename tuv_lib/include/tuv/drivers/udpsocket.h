@@ -42,7 +42,7 @@ class UDPSocket {
     UDPSocket(std::string host, uint16_t port_in, uint16_t port_out);
     UDPSocket(std::string host, uint16_t port_out);
 
-    void transmit(std::vector<uint8_t> data);
+    void transmit(std::vector<uint8_t> &data);
     uint32_t getMaxPacketSize(void);
 };
 

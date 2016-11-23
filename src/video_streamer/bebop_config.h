@@ -16,4 +16,4 @@
  */
 
 #define CAMERA_ID 1
-#define UDP_TARGET "192.168.42.5"
+#define UDP_TARGET "192.168.42.9"

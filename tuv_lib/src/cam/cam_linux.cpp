@@ -450,6 +450,7 @@ void CamLinux::enqueueBuffer(struct buffer_t buffer) {
  * @param[in] identifier The buffer id to enqueue
  */
 void CamLinux::freeImage(uint16_t identifier) {
+    CLOGGER_DEBUG("Freeing V4L2: " << identifier << " Size: " << buffers.size());
     enqueueBuffer(buffers.at(identifier));
 }
 

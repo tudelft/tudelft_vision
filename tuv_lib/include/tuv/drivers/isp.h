@@ -29,6 +29,16 @@
  * This is a driver implementation for the Parrot ISP which is used on the Bebop 1 and Bebop 2.
  */
 class ISP {
+  public:
+    /** YUV Statistics outputs */
+    struct statistics_t {
+        bool done;                      ///< Set to true when having correct stats
+        std::vector<uint32_t> awb_sum;  ///< per channel sum of the pixels (YUV channels)
+        uint32_t nb_y;                  ///< Amount of valid Y pixels used in the sum
+        uint32_t nb_grey;               ///< Amount of grey pixels (counted with the threshold)
+        std::vector<uint32_t> hist_y;   ///< Histogram of the Y values
+    };
+
   private:
     /** List of all the isp registers */
     enum {
@@ -55,6 +65,7 @@ class ISP {
         struct avi_isp_gamma_corrector_bv_lut_regs bv_lut;      ///< Gamma corrector BF list registers
         struct avi_isp_chroma_regs chroma;                      ///< Chroma registers
         struct avi_isp_chain_yuv_inter_regs yuv_inter;          ///< YUV chain registers
+        struct avi_isp_statistics_yuv_regs yuv_stats;           ///< YUV statistics registers
     };
     struct avi_isp_registers reg;   ///< ISP register values
 
@@ -113,6 +124,17 @@ class ISP {
         bool yuv_ee_crf;    ///< YUV chain Edge Enhancement enabling
         bool yuv_i3d_lut;   ///< YUV chain i3d enabling
         bool yuv_drop;      ///< YUV Drop enabling
+
+        // YUV Statistics
+        uint32_t stat_left;     ///< YUV statistics window left offset in pixels (sensor pixels from capture window)
+        uint32_t stat_top;      ///< YUV statistics window top offset in pixels (sensor pixels from capture window)
+        uint32_t stat_width;    ///< YUV statistics window width in pixels (sensor pixels, thus without binning etc.)
+        uint32_t stat_height;   ///< YUV statistics window height in pixels (sensor pixels, thus without binning etc.)
+        uint32_t stat_center_x; ///< YUV statistics circle center x position in pixels (sensor pixels from full sensor size, this without binning etc.)
+        uint32_t stat_center_y; ///< YUV statistics circle center y position in pixels (sensor pixels from full sensor size, this without binning etc.)
+        uint32_t stat_radius;   ///< YUV statistics circle radius in pixels (sensor pixels, without binning etc.)
+        std::vector<uint8_t> stat_incr_log2;    ///< YUV statistics increment in x and y direction (should be the same as sensor binning)
+        uint8_t stat_awb_threshold;             ///< YUV AWB threshold for |U| + |V| < threshod x V (for the number of grey pixels)
     };
     struct avi_isp_config config;   ///< ISP configuration values
 
@@ -135,25 +157,32 @@ class ISP {
     void sendGammaCorrectorLUT(void);
     void sendColorSpaceConversion(void);
     void sendYUVChain(void);
+    void sendYUVStatistics(bool request = false, bool clear = false);
 
   public:
-    ISP();
+    ISP(void);
 
-    void configure(int fd); ///< Configure the ISP
-    void reset(void);       ///< Reset the ISP
+    void configure(int fd);
+    void reset(void);
+
+    /* Usefull function access */
+    void requestYUVStatistics(bool clear = true);
+    struct statistics_t getYUVStatistics(void);
 
     /* Configuration functions */
-    void setResolution(uint32_t width, uint32_t height);  ///< Set the ISP resolution
+    void setResolution(uint32_t width, uint32_t height);
+    void setCrop(uint32_t left, uint32_t top, uint32_t width, uint32_t height);
     void setBayerChain(bool ped, bool grim, bool rip, bool denoise, bool lsc, bool ca, bool demos, bool conv);
     void setPedestal(uint16_t val_r, uint16_t val_gb, uint16_t val_gr, uint16_t val_b);
     void setPedestal(uint16_t val);
-    void setDenoising(std::vector<uint8_t> red, std::vector<uint8_t> green, std::vector<uint8_t> blue);
+    void setDenoising(std::vector<uint8_t> &red, std::vector<uint8_t> &green, std::vector<uint8_t> &blue);
     void setDemosaicking(uint16_t low, uint16_t high);
-    void setColorCorrection(std::vector<std::vector<float>> matrix, std::vector<uint32_t> offin, std::vector<uint32_t> offout, std::vector<uint32_t> clipmin, std::vector<uint32_t> clipmax);
+    void setColorCorrection(std::vector<std::vector<float>> &matrix, std::vector<uint32_t> &offin, std::vector<uint32_t> &offout, std::vector<uint32_t> &clipmin, std::vector<uint32_t> &clipmax);
     void setGammaCorrector(bool enable, bool palette, bool bit10);
-    void setGammaCorrector(bool enable, bool palette, bool bit10, std::vector<uint16_t> r_lut, std::vector<uint16_t> g_lut, std::vector<uint16_t> b_lut);
-    void setColorSpaceConversion(std::vector<std::vector<float>> matrix, std::vector<uint32_t> offin, std::vector<uint32_t> offout, std::vector<uint32_t> clipmin, std::vector<uint32_t> clipmax);
+    void setGammaCorrector(bool enable, bool palette, bool bit10, std::vector<uint16_t> &r_lut, std::vector<uint16_t> &g_lut, std::vector<uint16_t> &b_lut);
+    void setColorSpaceConversion(std::vector<std::vector<float>> &matrix, std::vector<uint32_t> &offin, std::vector<uint32_t> &offout, std::vector<uint32_t> &clipmin, std::vector<uint32_t> &clipmax);
     void setYUVChain(bool ee_crf, bool i3d_lut, bool drop);
+    void setStatisticsYUV(uint32_t left, uint32_t top, uint32_t width, uint32_t height, uint32_t center_x, uint32_t center_y, uint32_t radius, std::vector<uint8_t> &incr_log2, uint16_t awb_threshold = 33);
 };
 
 #endif /* DRIVERS_ISP_H_ */

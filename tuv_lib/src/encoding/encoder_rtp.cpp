@@ -19,6 +19,7 @@
 
 #include <assert.h>
 #include <sys/time.h>
+#include <stdexcept>
 
 /**
  * @brief Create a new RTP encoder
@@ -52,12 +53,12 @@ void EncoderRTP::createHeader(uint8_t type, bool marker, uint16_t sequence, uint
     data[idx++]  = timestamp & 0x000000FF;          // Timestamp LSB
     data[idx++]  = 0x13;                            // Arbritary 4-byte SSRC (sychronization source identifier)
     data[idx++]  = 0xF9;                            // Arbritary 4-byte SSRC (sychronization source identifier)
-    data[idx++] = 0x7E;                             // Arbritary 4-byte SSRC (sychronization source identifier)
-    data[idx++] = 0x67;                             // Arbritary 4-byte SSRC (sychronization source identifier)
+    data[idx++]  = 0x7E;                            // Arbritary 4-byte SSRC (sychronization source identifier)
+    data[idx++]  = 0x67;                            // Arbritary 4-byte SSRC (sychronization source identifier)
 }
 
 /**
- * @brief Create a JPEG header
+ * @brief Create an JPEG header
  *
  * This header is part of the RTP data and will describe the JPEG data encoded in the data of the RTP packet.
  * @param[in] offset The offset based from the start of the image
@@ -85,6 +86,22 @@ void EncoderRTP::createJPEGHeader(uint32_t offset, uint8_t quality, uint8_t form
 }
 
 /**
+ * @brief Create an H264 FU-A header
+ *
+ * This will create an H264 fragmentation unit type A header.
+ * @param start This is the starting packet
+ * @param end This is the ending packet
+ */
+void EncoderRTP::createH264FragmentAHeader(bool start, bool end, uint8_t nal_hdr) {
+    data[idx++] = (nal_hdr & 0x80)  // bit0: f (must always be 0)
+            | (nal_hdr & 0x60)      // bit1-2: nri
+            | 28;                   // bit3-7: type FU-A
+    data[idx++] = (start? 0x80 : 0x00)  // bit0: start (bit1: unused
+            | (end? 0x40 : 0x00)        // bit3: end
+            | (nal_hdr & 0x1F);         // bit3-7: type (of original NAL)
+}
+
+/**
  * @brief Append bytes to the RTP data
  *
  * This is used to append bytes to the RTP data. For example to append the JPEG image.
@@ -92,8 +109,89 @@ void EncoderRTP::createJPEGHeader(uint32_t offset, uint8_t quality, uint8_t form
  * @param length The length of the input buffer
  */
 void EncoderRTP::appendBytes(uint8_t *bytes, uint32_t length) {
-    for(uint32_t i = 0; i < length; i++)
+    for(uint32_t i = 0; i < length; ++i)
         data[idx++] = bytes[i];
+}
+
+/**
+ * @brief Encode an JPEG image
+ *
+ * This will encode the JPEG image using RTP and will send the output over the output socket.
+ * @param img The JPEG image to encode
+ */
+void EncoderRTP::encodeJPEG(uint8_t *img_buf, uint32_t img_size, uint32_t width, uint32_t height) {
+    uint32_t packet_size = socket->getMaxPacketSize() - 12 - 8; // Account for the RTP + JPEG header
+
+    // Get the current time
+    struct timeval tv;
+    gettimeofday(&tv, 0);
+    uint32_t t = (tv.tv_sec % (256 * 256)) * 90000 + tv.tv_usec * 9 / 100;
+
+    // Fragment the JPEG image with the max packet size
+    for(uint32_t offset = 0; (int32_t)(img_size - offset) > 0; offset += packet_size) {
+        uint32_t curr_size = ((img_size - offset) > packet_size)? packet_size : (img_size - offset);
+        bool end = ((img_size - offset) <= packet_size);
+
+        data.clear();
+        data.resize(curr_size + 12 + 8);
+        idx = 0;
+
+        createHeader(0x1A, end, sequence++, t);
+        createJPEGHeader(offset, 80, 0, width, height);
+        appendBytes(&img_buf[offset], curr_size);
+
+        socket->transmit(data);
+    }
+}
+
+/**
+ * @brief Encode an H264 buffer
+ *
+ * This will encode the H264 image using RTP and will send the output over the output socket.
+ * @param img The H264 image to encode
+ */
+void EncoderRTP::encodeH264(uint8_t *img_buf, uint32_t img_size) {
+    assert(img_size >= 4);
+    img_size -= 4; // Minus the NALU Start
+    uint32_t packet_size = socket->getMaxPacketSize() - 12; // Account for the RTP header
+
+    // Get the current time
+    struct timeval tv;
+    gettimeofday(&tv, 0);
+    uint32_t t = (tv.tv_sec % (256 * 256)) * 90000 + tv.tv_usec * 9 / 100;
+
+    // No packaging is needed (only remove starting zeros)
+    if(packet_size >= img_size) {
+        data.clear();
+        data.resize(img_size + 12);
+        idx = 0;
+
+        createHeader(0x60, true, sequence++, t);
+        appendBytes(&img_buf[4], img_size);
+
+        socket->transmit(data);
+    }
+    else {
+        img_size -= 1; // Minus NALU type
+        packet_size -= 2; // Acount for the FU-A header + NAL header
+
+        // Start after the NAL header
+        for(uint32_t offset = 0; (int32_t)(img_size - offset) > 0; offset += packet_size) {
+            uint32_t curr_size = ((img_size - offset) > packet_size)? packet_size : (img_size - offset);
+            bool start = (offset == 0);
+            bool end = ((img_size - offset) <= packet_size);
+
+            data.clear();
+            data.resize(curr_size + 12 + 2);
+            idx = 0;
+
+            createHeader(0x60, end, sequence++, t);
+            createH264FragmentAHeader(start, end, img_buf[4]);
+            appendBytes(&img_buf[offset + 5], curr_size);
+
+            socket->transmit(data);
+        }
+    }
 }
 
 /**
@@ -101,28 +199,45 @@ void EncoderRTP::appendBytes(uint8_t *bytes, uint32_t length) {
  *
  * This will encode the image using RTP and will send the output over the output socket. If the output
  * socket is non-blocking this function will return as soon as possible.
- * @param img The image to encode
+ * @param img The image to encode (JPEG or H264)
  */
 void EncoderRTP::encode(Image::Ptr img) {
-    uint8_t *img_buf = (uint8_t *)img->getData();
-    uint32_t img_size = img->getSize();
-    uint32_t packet_size = socket->getMaxPacketSize();
-
-    struct timeval tv;
-    gettimeofday(&tv, 0);
-    uint32_t t = (tv.tv_sec % (256 * 256)) * 90000 + tv.tv_usec * 9 / 100;
-
-    for(uint32_t offset = 0; (int32_t)(img_size - offset) > 0; offset += packet_size) {
-        uint32_t curr_size = ((img_size - offset) > packet_size)? packet_size : (img_size - offset);
-
-        data.clear();
-        data.resize(12 + 8 + curr_size);
-        idx = 0;
-
-        createHeader(0x1A, ((img_size - offset) <= packet_size), sequence++, t);
-        createJPEGHeader(offset, 80, 0, img->getWidth(), img->getHeight());
-        appendBytes(&img_buf[offset], curr_size);
-
-        socket->transmit(data);
+    switch(img->getPixelFormat()) {
+    case Image::FMT_JPEG: {
+        encodeJPEG((uint8_t*)img->getData(), img->getSize(), img->getWidth(), img->getHeight());
+        break;
     }
+
+    case Image::FMT_H264: {
+        // Check if it is an IDR frame (send SPS and PPS)
+        uint8_t *data = (uint8_t*)img->getData();
+        uint32_t data_size = img->getSize();
+        if((data[4] & 0x1F) == 0x05) {
+            assert(sps_data.size() > 0);
+            assert(pps_data.size() > 0);
+            encodeH264(sps_data.data(), sps_data.size());
+            encodeH264(pps_data.data(), pps_data.size());
+        }
+
+        // Encode the frame self
+        encodeH264(data, data_size);
+        break;
+    }
+
+    default:
+        throw std::runtime_error("Could not encode the image type in RTP");
+        break;
+    }
+}
+
+/**
+ * @brief Set the SPS and PPS data
+ *
+ * Set the SPS and PPS data of the H264 video stream.
+ * @param sps The SPS data
+ * @param pps The PPS data
+ */
+void EncoderRTP::setSPSPPS(std::vector<uint8_t> &sps, std::vector<uint8_t> &pps) {
+    sps_data = sps;
+    pps_data = pps;
 }

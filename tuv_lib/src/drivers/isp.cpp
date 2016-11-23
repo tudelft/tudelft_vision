@@ -24,11 +24,15 @@
 #include <sys/ioctl.h>
 #include <assert.h>
 #include <unistd.h>
+#include "drivers/clogger.h"
 
-
+/**
+ * @brief ISP initialization
+ */
 ISP::ISP(void) {
 
 }
+
 /**
  * Initialize ISP
  * @param[in] fd The video device connected to the ISP
@@ -371,7 +375,17 @@ void ISP::reset(void) {
     config.yuv_i3d_lut  = false;
     config.yuv_drop     = false;
 
-    // avi_isp_statistics_yuv_set_registers(&isp_reg.statistics_yuv);
+    // Set the default YUV statistics
+    config.stat_left            = 0;
+    config.stat_top             = 0;
+    config.stat_width           = 1080;
+    config.stat_height          = 1920;
+    config.stat_center_x        = 1088;
+    config.stat_center_y        = 1078;
+    config.stat_radius          = 1911;
+    config.stat_incr_log2       = {0,0};
+    config.stat_awb_threshold   = 33;
+
     // avi_isp_edge_enhancement_color_reduction_filter_set_registers(&isp_reg.eecrf);
     // avi_isp_edge_enhancement_color_reduction_filter_ee_lut_set_registers(&isp_reg.eecrf_lut);
 
@@ -385,6 +399,8 @@ void ISP::reset(void) {
     sendGammaCorrectorLUT();
     sendColorSpaceConversion();
     sendYUVChain();
+    sendYUVStatistics();
+    CLOGGER_INFO("Configured ISP");
 }
 
 /**
@@ -395,6 +411,24 @@ void ISP::reset(void) {
  */
 void ISP::setResolution(uint32_t width, uint32_t height) {
 
+}
+
+/**
+ * @brief Set the ISP image cropping parameters
+ *
+ * This will update all settings for the ISP based on the camera cropping settings.
+ * @param left The left pixel offset
+ * @param top The top pixel offset
+ * @param width The input pixel width
+ * @param height The input pixel height
+ */
+void ISP::setCrop(uint32_t left, uint32_t top, uint32_t width, uint32_t height) {
+    config.stat_left = left;
+    config.stat_top = top;
+    config.stat_width = width;
+    config.stat_height = height;
+
+    sendYUVStatistics();
 }
 
 /**
@@ -488,7 +522,7 @@ void ISP::sendPedestal(void) {
  * @param[in] green The coefficients for the green channel
  * @param[in] blue The coefficients for the blue channel
  */
-void ISP::setDenoising(std::vector<uint8_t> red, std::vector<uint8_t> green, std::vector<uint8_t> blue) {
+void ISP::setDenoising(std::vector<uint8_t> &red, std::vector<uint8_t> &green, std::vector<uint8_t> &blue) {
     config.denoise_red    = red;
     config.denoise_green  = green;
     config.denoise_blue   = blue;
@@ -596,7 +630,7 @@ void ISP::sendDemosaicking(void) {
  * @param[in] clipmin Clipping minimum which is done at the output (for each color RGB)
  * @param[in] clipmax Clipping maximum which is done at the output (for each color RGB)
  */
-void ISP::setColorCorrection(std::vector<std::vector<float>> matrix, std::vector<uint32_t> offin, std::vector<uint32_t> offout, std::vector<uint32_t> clipmin, std::vector<uint32_t> clipmax) {
+void ISP::setColorCorrection(std::vector<std::vector<float>> &matrix, std::vector<uint32_t> &offin, std::vector<uint32_t> &offout, std::vector<uint32_t> &clipmin, std::vector<uint32_t> &clipmax) {
     config.cc_matrix  = matrix;
     config.cc_offin   = offin;
     config.cc_offout  = offout;
@@ -692,7 +726,7 @@ void ISP::sendGammaCorrector(void) {
  * @param[in] g_lut A lookup table for the Green channel (256 items in 8bit and 1024 items in 10bit)
  * @param[in] b_lut A lookup table for the Blue channel (256 items in 8bit and 1024 items in 10bit)
  */
-void ISP::setGammaCorrector(bool enable, bool palette, bool bit10, std::vector<uint16_t> r_lut, std::vector<uint16_t> g_lut, std::vector<uint16_t> b_lut) {
+void ISP::setGammaCorrector(bool enable, bool palette, bool bit10, std::vector<uint16_t> &r_lut, std::vector<uint16_t> &g_lut, std::vector<uint16_t> &b_lut) {
     // Set the gamma corrector values
     setGammaCorrector(enable, palette, bit10);
 
@@ -736,7 +770,7 @@ void ISP::sendGammaCorrectorLUT(void) {
  * @param[in] clipmin Clipping minimum which is done at the output (for each channel YUV)
  * @param[in] clipmax Clipping maximum which is done at the output (for each channel YUV)
  */
-void ISP::setColorSpaceConversion(std::vector<std::vector<float>> matrix, std::vector<uint32_t> offin, std::vector<uint32_t> offout, std::vector<uint32_t> clipmin, std::vector<uint32_t> clipmax) {
+void ISP::setColorSpaceConversion(std::vector<std::vector<float>> &matrix, std::vector<uint32_t> &offin, std::vector<uint32_t> &offout, std::vector<uint32_t> &clipmin, std::vector<uint32_t> &clipmax) {
     config.csc_matrix  = matrix;
     config.csc_offin   = offin;
     config.csc_offout  = offout;
@@ -801,7 +835,7 @@ void ISP::setYUVChain(bool ee_crf, bool i3d_lut, bool drop) {
 }
 
 /**
- * Send the YUV chain configuration
+ * @brief Send the YUV chain configuration
  */
 void ISP::sendYUVChain(void) {
     // Set the registers
@@ -811,6 +845,112 @@ void ISP::sendYUVChain(void) {
 
     // Send the register
     avi_isp_chain_yuv_inter_set_registers(&reg.yuv_inter);
+}
+
+/**
+ * @brief Set the YUV statistics settings
+ *
+ * This enables you to set the YUV statistics window using the intersection of the rectangle and the circle. Note
+ * that all parameters are in pixels from the sensor without any binning!
+ * The awb threshold sets the target threhold for the counting of grey pixels using |U| + |V| < T x V
+ * @param left The left offset from the camera output window in sensor pixels
+ * @param top The top offset from the camera output window in sensor pixels
+ * @param width The width of the statistics window in sensor pixels
+ * @param height The height of the statistics window in sensor pixels
+ * @param center_x The center x coordinate of the circle in sensor pixels from the sensor coordinates
+ * @param center_y The center y coordinate of the circle in sensor pixels from the sensor coordinates
+ * @param radius The circle radius in snesor pixels for the intersection with the rectangle
+ * @param incr_log2 The increment used for binning
+ * @param awb_threshold The white balancing threshold T
+ */
+void ISP::setStatisticsYUV(uint32_t left, uint32_t top, uint32_t width, uint32_t height, uint32_t center_x, uint32_t center_y, uint32_t radius, std::vector<uint8_t> &incr_log2, uint16_t awb_threshold) {
+    config.stat_left = left;
+    config.stat_top = top;
+    config.stat_width = width;
+    config.stat_height = height;
+    config.stat_center_x = center_x;
+    config.stat_center_y = center_y;
+    config.stat_radius = radius;
+    config.stat_incr_log2 = incr_log2;
+    config.stat_awb_threshold = awb_threshold;
+}
+
+/**
+ * @brief Send the YUV statistics configuration
+ *
+ * This will send the current YUV staticstics configuration to the registers which also has to option
+ * to request or clear the statistics.
+ * @param request Request the statistics for the next frame
+ * @param clear Clear the current statistics
+ */
+void ISP::sendYUVStatistics(bool request, bool clear) {
+    assert(config.stat_incr_log2.size() == 2);
+
+    // Set the registers
+    reg.yuv_stats.measure_req.measure_req = (request)? 1:0;
+    reg.yuv_stats.measure_req.clear = (clear)? 1:0;
+    reg.yuv_stats.measure_status.done = 0;
+    reg.yuv_stats.measure_status.error = 0;
+    reg.yuv_stats.window_pos_x.window_x_start = config.stat_left;
+    reg.yuv_stats.window_pos_x.window_x_end = config.stat_left + config.stat_width;
+    reg.yuv_stats.window_pos_y.window_y_start = config.stat_top;
+    reg.yuv_stats.window_pos_y.window_y_end = config.stat_top + config.stat_height;
+    reg.yuv_stats.circle_pos_x_center.x_center = config.stat_center_x;
+    reg.yuv_stats.circle_pos_x_squared.x_squared = config.stat_center_x * config.stat_center_x;
+    reg.yuv_stats.circle_pos_y_center.y_center = config.stat_center_y;
+    reg.yuv_stats.circle_pos_y_squared.y_squared = config.stat_center_y * config.stat_center_y;
+    reg.yuv_stats.circle_radius_squared.radius_squared = config.stat_radius * config.stat_radius;
+    reg.yuv_stats.increments_log2.x_log2_inc = config.stat_incr_log2[0];
+    reg.yuv_stats.increments_log2.y_log2_inc = config.stat_incr_log2[1];
+    reg.yuv_stats.awb_threshold.awb_threshold = config.stat_awb_threshold;
+
+    // Send the register
+    avi_isp_statistics_yuv_set_registers(&reg.yuv_stats);
+}
+
+/**
+ * @brief Request new YUV statistics
+ *
+ * This will request new YUV statistics when the new image arrives
+ * @param clear Clear the previous results
+ */
+void ISP::requestYUVStatistics(bool clear) {
+    sendYUVStatistics(true, clear);
+}
+
+/**
+ * @brief Get the current YUV statistics
+ *
+ * Get the YUV statistics of the current image. Used for Auto White Balancing.
+ * @return The YUV statistics
+ */
+struct ISP::statistics_t ISP::getYUVStatistics(void) {
+    // Request basic statistics
+    struct avi_isp_statistics_yuv_regs stats_yuv;
+    avi_isp_statistics_yuv_get_registers(&stats_yuv);
+
+    // Request Y histogram
+    struct avi_isp_statistics_yuv_ae_histogram_y_regs hist;
+    avi_isp_statistics_yuv_ae_histogram_y_get_registers(&hist);
+
+    // Set the statistics
+    struct statistics_t stat;
+    stat.awb_sum = {stats_yuv.awb_sum_y.awb_sum_y, stats_yuv.awb_sum_u.awb_sum_u, stats_yuv.awb_sum_v.awb_sum_v};
+    stat.nb_y = stats_yuv.ae_nb_valid_y.nb_valid_y;
+    stat.nb_grey = stats_yuv.awb_nb_grey_pixels.nb_grey_pixels;
+
+    // Check for errors
+    if(stats_yuv.measure_status.error)
+        stat.done = false;
+    else
+        stat.done = true;
+
+    // Fill the histogram
+    stat.hist_y.resize(256);
+    for(uint16_t i = 0; i < 256; ++i)
+        stat.hist_y[i] = hist.ae_histogram_y[i].histogram_y;
+
+    return stat;
 }
 
 /**

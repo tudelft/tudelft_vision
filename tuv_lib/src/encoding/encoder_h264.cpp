@@ -32,7 +32,7 @@
  * @param width The output width in pixels (must be multiple of 4)
  * @param height The output height in pixels (must be multiple of 2)
  * @param frame_rate The output frame rate in FPS in which the time increments is counted (default 30FPS)
- * @param bit_rate The output target bit rate in bits per second (default 1000000bps = 1Mbps)
+ * @param bit_rate The output target bit rate in bits per second (default 2000000bps = 2Mbps) [10000...60000000]
  */
 EncoderH264::EncoderH264(uint32_t width, uint32_t height, float frame_rate, uint32_t bit_rate):
     output_cfg{width, height, frame_rate, bit_rate} {
@@ -48,7 +48,7 @@ EncoderH264::EncoderH264(uint32_t width, uint32_t height, float frame_rate, uint
     // Configure coding
     configureCoding();
 
-    // Allocate the SPS + PPS buffer (0x2174458) base: 0x2173E00
+    // Allocate the SPS + PPS buffer
     if(EWLMallocLinear(*(void **)((uint8_t *)encoder + BEBOP_EWL_OFFSET), 128, &sps_pps_nalu) != EWL_OK) {
         throw std::runtime_error("Could not allocate SPS + PPS EWL Linear buffer");
     }
@@ -181,12 +181,12 @@ Image::Ptr EncoderH264::encode(Image::Ptr img) {
         throw std::runtime_error("Hantro H264 encoder could not encode frame with error code: " + std::to_string(ret));
     }
 
-    CLOGGER_DEBUG("Image " << output_buffer->index << " encoded (frame: " << frame_cnt << ", intra: " << ((intra_cnt == 0)? 1 : 0) << ")");
+    // Update frame information
+    CLOGGER_DEBUG("H264 Image " << output_buffer->index << " encoded (frame: " << frame_cnt << ", intra: " << ((intra_cnt == 0)? 1 : 0) << ", nalus:" << encoder_output.numNalus << ")");
     frame_cnt++;
     intra_cnt = (intra_cnt + 1) % (uint32_t)output_cfg.frame_rate;
 
     // Create a new pointer image
-    CLOGGER_DEBUG("New image at " << (uint32_t)output_buffer->mem.virtualAddress << " = " << (void*)output_buffer->mem.virtualAddress << " size: " << encoder_output.streamSize);
     return std::make_shared<ImagePtr>(this, output_buffer->index, Image::FMT_H264, output_cfg.width, output_cfg.height, (void*)output_buffer->mem.virtualAddress, encoder_output.streamSize);
 }
 
@@ -199,10 +199,8 @@ Image::Ptr EncoderH264::encode(Image::Ptr img) {
  * @param[in] identifier The buffer id to free
  */
 void EncoderH264::freeImage(uint16_t identifier) {
-    output_buf_t &buf = output_buffers.at(identifier);
-    buf.is_free = true;
-
-    CLOGGER_DEBUG("Image " << identifier << " freed");
+    output_buf_t *buf = &output_buffers[identifier];
+    buf->is_free = true;
 }
 
 /**
@@ -449,9 +447,9 @@ H264EncPictureRotation EncoderH264::getEncPictureRotation(enum rotation_t rot) {
  */
 struct EncoderH264::output_buf_t *EncoderH264::getFreeBuffer(void) {
     // First check already created buffers
-    for(auto &buf : output_buffers) {
-        if(buf.is_free)
-            return &buf;
+    for(uint16_t i = 0; i < output_buffers.size(); ++i) {
+        if(output_buffers[i].is_free)
+            return &output_buffers[i];
     }
 
     // Create a new buffer

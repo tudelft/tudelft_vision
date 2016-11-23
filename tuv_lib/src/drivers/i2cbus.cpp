@@ -127,7 +127,7 @@ bool I2CBus::transmit(uint8_t *bytes, uint32_t length) {
     assert(fd >= 0);
 
     // Write multiple bytes to a device
-    if(write(fd, &bytes, length) != (int32_t)length) {
+    if(write(fd, bytes, length) != (int32_t)length) {
         throw std::runtime_error(std::string("Could not transmit multiple bytes to (") + strerror(errno) + ")");
         return false;
     }

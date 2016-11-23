@@ -131,7 +131,6 @@ class MT9F002 {
     void setFPS(float fps);
 
     /* Exposure settings */
-    float getMaxExposure(void);
     float getExposure(void);
     float getTargetExposure(void);
     void setExposure(float exposure);

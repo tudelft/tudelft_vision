@@ -51,8 +51,8 @@ class ImagePtr: public Image {
     uint16_t identifier;    ///< Identifier for the handler class
 
   public:
-    ImagePtr(Handler *handler, uint32_t identifier, enum pixel_formats pixel_format, uint32_t width, uint32_t height, void *data);
-    ImagePtr(Handler *handler, uint32_t identifier, enum pixel_formats pixel_format, uint32_t width, uint32_t height, void *data, uint32_t size);
+    ImagePtr(Handler *handler, uint16_t identifier, enum pixel_formats pixel_format, uint32_t width, uint32_t height, void *data);
+    ImagePtr(Handler *handler, uint16_t identifier, enum pixel_formats pixel_format, uint32_t width, uint32_t height, void *data, uint32_t size);
     ~ImagePtr(void);
 };
 

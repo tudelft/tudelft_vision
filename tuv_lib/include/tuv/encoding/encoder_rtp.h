@@ -20,6 +20,7 @@
 
 #include <tuv/vision/image.h>
 #include <tuv/drivers/udpsocket.h>
+#include <stdint.h>
 #include <vector>
 
 /**
@@ -34,14 +35,24 @@ class EncoderRTP {
     std::vector<uint8_t> data;  ///< Internal data
     uint16_t idx;               ///< Internal data index
 
+    std::vector<uint8_t> sps_data;  ///< H264 SPS data
+    std::vector<uint8_t> pps_data;  ///< H264 PPS data
+
+    /* Usefull helper functions */
     void createHeader(uint8_t type, bool marker, uint16_t sequence, uint32_t timestamp);
     void createJPEGHeader(uint32_t offset, uint8_t quality, uint8_t format, uint32_t width, uint32_t height);
+    void createH264FragmentAHeader(bool start, bool end, uint8_t nal_hdr);
     void appendBytes(uint8_t *bytes, uint32_t length);
+
+    /* Different encodings */
+    void encodeJPEG(uint8_t *img_buf, uint32_t img_size, uint32_t width, uint32_t height);
+    void encodeH264(uint8_t *img_buf, uint32_t img_size);
 
   public:
     EncoderRTP(UDPSocket::Ptr socket);
 
     void encode(Image::Ptr img);
+    void setSPSPPS(std::vector<uint8_t> &sps, std::vector<uint8_t> &pps);
 };
 
 #endif /* ENCODING_ENCODER_RTP_H_ */

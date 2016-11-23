@@ -98,7 +98,7 @@ class EncoderH264: public ImagePtr::Handler {
     struct output_buf_t *getFreeBuffer(void);
 
   public:
-    EncoderH264(uint32_t width, uint32_t height, float frame_rate = 15, uint32_t bit_rate = 1000000);
+    EncoderH264(uint32_t width, uint32_t height, float frame_rate = 15, uint32_t bit_rate = 2000000);
     ~EncoderH264(void);
 
     /* Input settings */

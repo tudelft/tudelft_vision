@@ -28,8 +28,8 @@ int main(int argc, char *argv[])
 {
   PLATFORM target;
 #if TARGET == Bebop
-  EncoderH264 encoder(1080, 720);
-  EncoderJPEG encoder_jpeg;
+  EncoderH264 encoder(1920, 1088, 30, 4000000);
+  //EncoderJPEG encoder_jpeg;
 #else
   EncoderJPEG encoder;
 #endif
@@ -37,14 +37,15 @@ int main(int argc, char *argv[])
   EncoderRTP rtp(udp);
 
   Cam::Ptr cam = target.getCamera(CAMERA_ID);
-  cam->setOutput(Image::FMT_YUYV, 720, 1088);
-  //cam.setCrop(114, 106, 2048, 3320);
+  cam->setOutput(Image::FMT_YUYV, 1088, 1920);
+  cam->setCrop(0, 0, 1088, 1920);
   encoder.setInput(cam, EncoderH264::ROTATE_90L);
   encoder.start();
 
-  std::ofstream outfile("video.h264", std::ios::out | std::ios::binary);
+  FILE *fp = fopen("video.h264", "w");
   std::vector<uint8_t> sps = encoder.getSPS();
   std::vector<uint8_t> pps = encoder.getPPS();
+  rtp.setSPSPPS(sps, pps);
 
   cam->start();
   uint32_t i = 0;
@@ -52,22 +53,19 @@ int main(int argc, char *argv[])
     Image::Ptr img = cam->getImage();
     Image::Ptr enc_img = encoder.encode(img);
 
-    img->downsample(4);
-    Image::Ptr jpeg_img = encoder_jpeg.encode(img);
-    //rtp.encode(jpeg);
+    //img->downsample(4);
+    //Image::Ptr jpeg_img = encoder_jpeg.encode(img);
+    rtp.encode(enc_img);
     //usleep(200000);
 
-    std::cout << "Writing " << sps.data() << " size: " << sps.size() << "\r\n";
-    outfile.write((char*)sps.data(), sps.size());
-    std::cout << "Writing " << pps.data() << " size: " << pps.size() << "\r\n";
-    outfile.write((char*)pps.data(), pps.size());
-    std::cout << "Writing " << enc_img->getData() << " size: " << enc_img->getSize() << "\r\n";
-    outfile.write((char*)enc_img->getData(), enc_img->getSize());
+    fwrite(sps.data(), sps.size(), 1, fp);
+    fwrite(pps.data(), pps.size(), 1, fp);
+    fwrite((uint8_t *)enc_img->getData(), enc_img->getSize(), 1, fp);
 
-    std::string test = "out" + std::to_string(i) + ".jpg";
+    /*std::string test = "out" + std::to_string(i) + ".jpg";
     FILE *fp = fopen(test.c_str(), "w");
     fwrite((uint8_t *)jpeg_img->getData(), jpeg_img->getSize(), 1, fp);
-    fclose(fp);
+    fclose(fp);*/
     ++i;
     i = i %20;
   }

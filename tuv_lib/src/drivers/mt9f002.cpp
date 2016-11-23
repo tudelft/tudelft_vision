@@ -18,6 +18,7 @@
 #include "drivers/mt9f002.h"
 
 #include "drivers/mt9f002_regs.h"
+#include "drivers/clogger.h"
 #include <stdexcept>
 #include <assert.h>
 #include <math.h>
@@ -40,17 +41,17 @@ MT9F002::MT9F002(I2CBus *i2c_bus, enum interfaces interface, struct pll_config_t
     this->pll_config = pll_config;
 
     // Default values
-    target_exposure = 50;
-    target_fps = 15;
+    target_exposure = 10;
+    target_fps = 30;
 
     // Default configuration
-    res_config.offset_x       = 114;
-    res_config.offset_y       = 106;
+    res_config.offset_x       = 400 + 114;
+    res_config.offset_y       = 400 + 106;
     res_config.output_width   = 1088;
-    res_config.output_height  = 720;
+    res_config.output_height  = 1920;
     res_config.output_scaler  = 1.0;
     res_config.sensor_width   = 1088;
-    res_config.sensor_height  = 720;
+    res_config.sensor_height  = 1920;
 
     blank_config.min_line_blanking_pck              = 1316;
     blank_config.min_line_length_pck                = 1032;
@@ -58,10 +59,10 @@ MT9F002::MT9F002(I2CBus *i2c_bus, enum interfaces interface, struct pll_config_t
     blank_config.fine_integration_time_min          = 1032;
     blank_config.fine_integration_time_max_margin   = 1316;
 
-    gain_config.red        = 2.0;
-    gain_config.green1     = 2.0;
-    gain_config.blue       = 2.0;
-    gain_config.green2     = 2.0;
+    gain_config.red        = 3.0;
+    gain_config.green1     = 3.0;
+    gain_config.blue       = 4.0;
+    gain_config.green2     = 3.0;
 
     //FIXME: Power reset??
 
@@ -750,7 +751,8 @@ void MT9F002::writeExposure(void) {
     /* Fetch minimum and maximum integration times */
     uint16_t coarse_integration_min = readRegister(MT9F002_COARSE_INTEGRATION_TIME_MIN, 2);
     uint16_t coarse_integration_max = frame_length - readRegister(MT9F002_COARSE_INTEGRATION_TIME_MAX_MARGIN, 2);
-    uint16_t fine_integration_max = line_length - blank_config.fine_integration_time_max_margin;
+    uint16_t fine_integration_min = readRegister(MT9F002_FINE_INTEGRATION_TIME_MIN, 2);
+    uint16_t fine_integration_max = line_length - readRegister(MT9F002_FINE_INTEGRATION_TIME_MAX_MARGIN, 2);
 
     /* Compute fine and coarse integration time */
     uint32_t integration = target_exposure * vt_pix_clk * 1000;
@@ -758,9 +760,9 @@ void MT9F002::writeExposure(void) {
     uint16_t fine_integration = integration % line_length;
 
     /* Make sure fine integration is inside bounds */
-    if(blank_config.fine_integration_time_min > fine_integration || fine_integration > fine_integration_max) {
+    if(fine_integration_min > fine_integration || fine_integration > fine_integration_max) {
         int32_t upper_coarse_integration = coarse_integration + 1;
-        int32_t upper_fine_integration = blank_config.fine_integration_time_min;
+        int32_t upper_fine_integration = fine_integration_min;
 
         int32_t lower_coarse_integration = coarse_integration - 1;
         int32_t lower_fine_integration = fine_integration_max;
@@ -804,8 +806,10 @@ void MT9F002::writeExposure(void) {
 
     /* Set the registers */
     real_exposure = (float)(coarse_integration * line_length + fine_integration) / (vt_pix_clk * 1000);
+    writeRegister(MT9F002_GROUPED_PARAMETER_HOLD, 1, 1);
     writeRegister(MT9F002_COARSE_INTEGRATION_TIME, coarse_integration, 2);
     writeRegister(MT9F002_FINE_INTEGRATION_TIME_, fine_integration, 2);
+    writeRegister(MT9F002_GROUPED_PARAMETER_HOLD, 0, 1);
 }
 
 /**
@@ -868,10 +872,12 @@ uint16_t MT9F002::calculateGain(float gain) {
  * MT9F002_GREEN2_GAIN register based on the gain_config.
  */
 void MT9F002::writeGains(void) {
+    writeRegister(MT9F002_GROUPED_PARAMETER_HOLD, 1, 1);
     writeRegister(MT9F002_GREEN1_GAIN, calculateGain(gain_config.green1), 2);
     writeRegister(MT9F002_BLUE_GAIN,   calculateGain(gain_config.blue), 2);
     writeRegister(MT9F002_RED_GAIN,    calculateGain(gain_config.red), 2);
     writeRegister(MT9F002_GREEN2_GAIN, calculateGain(gain_config.green2), 2);
+    writeRegister(MT9F002_GROUPED_PARAMETER_HOLD, 0, 1);
 }
 
 /**
@@ -936,4 +942,63 @@ void MT9F002::calculateResolution(void) {
 void MT9F002::setOutput(uint16_t width, uint16_t height) {
     assert(width%2 == 0);
     assert(height%2 == 0);
+}
+
+/**
+ * @brief Get the real exposure
+ *
+ * Get the real calculated exposure. Note that this can be different from the requested exposure.
+ * @return The real exposure in ms
+ */
+float MT9F002::getExposure(void) {
+    return real_exposure;
+}
+
+/**
+ * @brief Get the target exposure
+ *
+ * Get the target exposure in ms. This is the requested exposure and can be different from the real
+ * exposure.
+ * @return The target exposure in ms
+ */
+float MT9F002::getTargetExposure(void) {
+    return target_exposure;
+}
+
+/**
+ * @brief Set the target exposure
+ *
+ * Set the wanted exposure. Note that sometimes this can not be reached due to blanking and other
+ * settings.
+ * @param exposure The target exposure in ms
+ */
+void MT9F002::setExposure(float exposure) {
+    assert(exposure > 0);
+    target_exposure = exposure;
+    CLOGGER_DEBUG("Setting exposure: " << exposure);
+
+    writeExposure();
+}
+
+/**
+ * @brief Get the current color gains
+ *
+ * This will return the current configured color gains
+ * @return The current color gains
+ */
+struct MT9F002::gain_config_t MT9F002::getGains(void) {
+    return gain_config;
+}
+
+/**
+ * @brief Set the current color gains
+ *
+ * The color gains for each channel can be set.
+ * @param gains The new color gains
+ */
+void MT9F002::setGains(struct gain_config_t gains) {
+    gain_config = gains;
+    CLOGGER_DEBUG("Setting gains: " << gains.blue << ", " << gains.red);
+
+    writeGains();
 }
