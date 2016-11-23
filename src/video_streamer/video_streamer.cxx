@@ -1,5 +1,5 @@
 /*
- * This file is part of the XXX distribution (https://github.com/xxxx or http://xxx.github.io).
+ * This file is part of the TU Delft Vision programs (https://github.com/tudelft/tudelft_vision).
  * Copyright (c) 2016 Freek van Tienen <freek.v.tienen@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
