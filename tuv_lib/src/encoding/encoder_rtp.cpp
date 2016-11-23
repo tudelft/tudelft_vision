@@ -91,14 +91,15 @@ void EncoderRTP::createJPEGHeader(uint32_t offset, uint8_t quality, uint8_t form
  * This will create an H264 fragmentation unit type A header.
  * @param start This is the starting packet
  * @param end This is the ending packet
+ * @param nal_hdr Original NAL header of total NAL packet
  */
 void EncoderRTP::createH264FragmentAHeader(bool start, bool end, uint8_t nal_hdr) {
     data[idx++] = (nal_hdr & 0x80)  // bit0: f (must always be 0)
-            | (nal_hdr & 0x60)      // bit1-2: nri
-            | 28;                   // bit3-7: type FU-A
+                  | (nal_hdr & 0x60)      // bit1-2: nri
+                  | 28;                   // bit3-7: type FU-A
     data[idx++] = (start? 0x80 : 0x00)  // bit0: start (bit1: unused
-            | (end? 0x40 : 0x00)        // bit3: end
-            | (nal_hdr & 0x1F);         // bit3-7: type (of original NAL)
+                  | (end? 0x40 : 0x00)        // bit3: end
+                  | (nal_hdr & 0x1F);         // bit3-7: type (of original NAL)
 }
 
 /**
@@ -117,7 +118,10 @@ void EncoderRTP::appendBytes(uint8_t *bytes, uint32_t length) {
  * @brief Encode an JPEG image
  *
  * This will encode the JPEG image using RTP and will send the output over the output socket.
- * @param img The JPEG image to encode
+ * @param img_buf The H264 image buffer to encode
+ * @param img_size The image buffer size in bytes
+ * @param width The image width in pixels
+ * @param height The image height in pixels
  */
 void EncoderRTP::encodeJPEG(uint8_t *img_buf, uint32_t img_size, uint32_t width, uint32_t height) {
     uint32_t packet_size = socket->getMaxPacketSize() - 12 - 8; // Account for the RTP + JPEG header
@@ -148,7 +152,8 @@ void EncoderRTP::encodeJPEG(uint8_t *img_buf, uint32_t img_size, uint32_t width,
  * @brief Encode an H264 buffer
  *
  * This will encode the H264 image using RTP and will send the output over the output socket.
- * @param img The H264 image to encode
+ * @param img_buf The H264 image buffer to encode
+ * @param img_size The image buffer size in bytes
  */
 void EncoderRTP::encodeH264(uint8_t *img_buf, uint32_t img_size) {
     assert(img_size >= 4);
@@ -170,8 +175,7 @@ void EncoderRTP::encodeH264(uint8_t *img_buf, uint32_t img_size) {
         appendBytes(&img_buf[4], img_size);
 
         socket->transmit(data);
-    }
-    else {
+    } else {
         img_size -= 1; // Minus NALU type
         packet_size -= 2; // Acount for the FU-A header + NAL header
 

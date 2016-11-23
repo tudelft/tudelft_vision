@@ -55,8 +55,8 @@ void CamBebop::start(void) {
  * Get a new image from the front camera.
  * @return The image
  */
-#define MAX_HIST_Y 235
 Image::Ptr CamBebop::getImage(void) {
+    #define MAX_HIST_Y 235
     Image::Ptr img = CamLinux::getImage();
     struct ISP::statistics_t stats = isp.getYUVStatistics();
 
@@ -74,30 +74,30 @@ Image::Ptr CamBebop::getImage(void) {
         float adjustment = 1.0f;
 
         if (saturated_pixels + max_saturated_pixels / 10 > max_saturated_pixels) {
-          // Fix saturated pixels
-          adjustment = 1.0f - (float)saturated_pixels / stats.nb_y;
-          adjustment *= adjustment * adjustment;  // speed up
+            // Fix saturated pixels
+            adjustment = 1.0f - (float)saturated_pixels / stats.nb_y;
+            adjustment *= adjustment * adjustment;  // speed up
         } else if (bright_pixels + target_bright_pixels / 10 < target_bright_pixels) {
-          // increase brightness to try and hit the desired number of well exposed pixels
-          int l = MAX_HIST_Y - 1;
-          while (bright_pixels < target_bright_pixels && l > 0) {
-            bright_pixels += cdf[l];
-            bright_pixels -= cdf[l - 1];
-            l--;
-          }
+            // increase brightness to try and hit the desired number of well exposed pixels
+            int l = MAX_HIST_Y - 1;
+            while (bright_pixels < target_bright_pixels && l > 0) {
+                bright_pixels += cdf[l];
+                bright_pixels -= cdf[l - 1];
+                l--;
+            }
 
-          adjustment = (float)MAX_HIST_Y / (l + 1);
+            adjustment = (float)MAX_HIST_Y / (l + 1);
         } else if (bright_pixels - target_bright_pixels / 10 > target_bright_pixels) {
-          // decrease brightness to try and hit the desired number of well exposed pixels
-          int l = MAX_HIST_Y - 20;
-          while (bright_pixels > target_bright_pixels && l < MAX_HIST_Y) {
-            bright_pixels -= cdf[l];
-            bright_pixels += cdf[l - 1];
-            l++;
-          }
+            // decrease brightness to try and hit the desired number of well exposed pixels
+            int l = MAX_HIST_Y - 20;
+            while (bright_pixels > target_bright_pixels && l < MAX_HIST_Y) {
+                bright_pixels -= cdf[l];
+                bright_pixels += cdf[l - 1];
+                l++;
+            }
 
-          adjustment = (float)(MAX_HIST_Y - 20) / l;
-          adjustment *= adjustment;   // speedup
+            adjustment = (float)(MAX_HIST_Y - 20) / l;
+            adjustment *= adjustment;   // speedup
         }
 
         // Calculate exposure
@@ -113,18 +113,18 @@ Image::Ptr CamBebop::getImage(void) {
         bool changed = false;
 
         if (fabs(avgU) > threshold) {
-          gains.blue -= gain * avgU;
-          changed = true;
+            gains.blue -= gain * avgU;
+            changed = true;
         }
         if (fabs(avgV) > threshold) {
-          gains.red -= gain * avgV;
-          changed = true;
+            gains.red -= gain * avgV;
+            changed = true;
         }
 
         if (changed) {
-          gains.blue = std::min(std::max(gains.blue, 2.0f), 75.0f);
-          gains.red = std::min(std::max(gains.red, 2.0f), 75.0f);
-          //mt9f002.setGains(gains);
+            gains.blue = std::min(std::max(gains.blue, 2.0f), 75.0f);
+            gains.red = std::min(std::max(gains.red, 2.0f), 75.0f);
+            //mt9f002.setGains(gains);
         }
     }
 
