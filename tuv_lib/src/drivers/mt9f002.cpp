@@ -45,24 +45,21 @@ MT9F002::MT9F002(I2CBus *i2c_bus, enum interfaces interface, struct pll_config_t
     target_fps = 30;
 
     // Default configuration
-    res_config.offset_x       = 400 + 114;
-    res_config.offset_y       = 400 + 106;
+    res_config.offset_x       = 114;
+    res_config.offset_y       = 106;
     res_config.output_width   = 1088;
     res_config.output_height  = 1920;
-    res_config.output_scaler  = 1.0;
     res_config.sensor_width   = 1088;
     res_config.sensor_height  = 1920;
-
-    blank_config.min_line_blanking_pck              = 1316;
-    blank_config.min_line_length_pck                = 1032;
-    blank_config.min_line_fifo_pck                  = 60;
-    blank_config.fine_integration_time_min          = 1032;
-    blank_config.fine_integration_time_max_margin   = 1316;
 
     gain_config.red        = 3.0;
     gain_config.green1     = 3.0;
     gain_config.blue       = 4.0;
     gain_config.green2     = 3.0;
+
+    // Calculate configuration
+    calculateResolution();
+    calculateBlanking();
 
     //FIXME: Power reset??
 
@@ -642,6 +639,10 @@ void MT9F002::writeResolution(void) {
     writeRegister(MT9F002_X_OUTPUT_SIZE, res_config.output_width, 2);
     writeRegister(MT9F002_Y_OUTPUT_SIZE, res_config.output_height, 2);
 
+    // Set the binning
+    writeRegister(MT9F002_X_ODD_INC, res_config.x_odd_inc, 2);
+    writeRegister(MT9F002_Y_ODD_INC, res_config.y_odd_inc, 2);
+
     // Calculate scaled width and height
     scaled_width = ceil((float)res_config.output_width / res_config.output_scaler);
     scaled_height = ceil((float)res_config.output_height / res_config.output_scaler);
@@ -903,6 +904,50 @@ int MT9F002::gcd(int a, int b) {
 }
 
 /**
+ * @brief Calculate blanking configuration
+ *
+ * This will calculate the blanking configuration based on the skipping/binning and
+ * scaling of the MT9F002 output.
+ */
+void MT9F002::calculateBlanking(void) {
+    // Set the correct blanking minimum
+    if (res_config.x_odd_inc > 1) {
+        if (res_config.y_odd_inc > 1)
+        {
+            /* Binning XY */
+            blank_config.min_line_blanking_pck 				= 2950;
+            blank_config.min_line_length_pck 				= 4650;
+            blank_config.min_line_fifo_pck 					= 120;
+            blank_config.fine_integration_time_max_margin 	= 2000;
+            blank_config.fine_integration_time_min 			= 2200;
+        } else {
+            /* Binning X */
+            blank_config.min_line_blanking_pck 				= 0;
+            blank_config.min_line_length_pck 				= 3495;
+            blank_config.min_line_fifo_pck 					= 60;
+            blank_config.fine_integration_time_max_margin 	= 1500;
+            blank_config.fine_integration_time_min 			= 1900;
+        }
+    } else {
+        if (res_config.output_scaler != 1) {
+            /* Scaler mode */
+            blank_config.min_line_blanking_pck 				= 2400;
+            blank_config.min_line_length_pck 				= 1750;
+            blank_config.min_line_fifo_pck 					= 60;
+            blank_config.fine_integration_time_max_margin 	= 1316;
+            blank_config.fine_integration_time_min 			= 1032;
+        } else {
+            /* Normal mode */
+            blank_config.min_line_blanking_pck 				= 1316;
+            blank_config.min_line_length_pck 				= 1032;
+            blank_config.min_line_fifo_pck 					= 60;
+            blank_config.fine_integration_time_max_margin 	= 1316;
+            blank_config.fine_integration_time_min 			= 1032;
+        }
+    }
+}
+
+/**
  * @brief This will calculate the new resolution configuration
  *
  * Based in the output size and cropping this will calculate the new resolution configuration. It
@@ -913,22 +958,29 @@ int MT9F002::gcd(int a, int b) {
  */
 void MT9F002::calculateResolution(void) {
     // First calculate the skipping in X and Y direction
-    /*static const uint8_t xy_odd_inc_tab[] = {1, 1, 3, 3, 7, 7, 7, 7, 15, 15, 15, 15, 15, 15, 15, 15, 31};
+    static const uint8_t xy_odd_inc_tab[] = {1, 1, 3, 3, 7, 7, 7, 7, 15, 15, 15, 15, 15, 15, 15, 15, 31};
     uint32_t width_res = res_config.sensor_width / res_config.output_width;
     uint32_t height_res = res_config.sensor_height / res_config.output_height;
     width_res = (width_res > 4)? 4 : width_res;
     height_res = (height_res > 16)? 16 : height_res;
     res_config.x_odd_inc = xy_odd_inc_tab[width_res];
-    res_config.y_odd_inc = xy_odd_inc_tab[height_res];*/
+    res_config.y_odd_inc = xy_odd_inc_tab[height_res];
 
 
     // Calculate remaining scaling not handled by binning / skipping
-    /*float hratio = ((res_config.output_width / ((res_config.x_odd_inc + 1) / 2) * MT9F002_SCALER_N) + res_config.sensor_width - 1) /
-         res_config.sensor_width;
-    float vratio = ((res_config.output_height / ((res_config.y_odd_inc + 1) / 2) * MT9F002_SCALER_N) + res_config.sensor_height -
-          1) / res_config.sensor_height;
-    float ratio = min(hratio, vratio);*/
-    // TODO: Fix this calculation
+    float hratio = ((res_config.sensor_width / ((res_config.x_odd_inc + 1) / 2) * MT9F002_SCALER_N) + res_config.output_width - 1) /
+         res_config.output_width;
+    float vratio = ((res_config.sensor_height / ((res_config.y_odd_inc + 1) / 2) * MT9F002_SCALER_N) + res_config.output_height -
+          1) / res_config.output_height;
+    float ratio = std::min(hratio, vratio);
+
+    if(ratio > MT9F002_SCALER_M_MAX_VAL) {
+        ratio = MT9F002_SCALER_M_MAX_VAL;
+        res_config.sensor_width = res_config.output_width * ratio * ((res_config.x_odd_inc + 1) / 2) / MT9F002_SCALER_N;
+        res_config.sensor_height = res_config.output_height * ratio * ((res_config.y_odd_inc + 1) / 2) / MT9F002_SCALER_N;
+    }
+
+    res_config.output_scaler = (float)MT9F002_SCALER_N / ratio;
 }
 
 /**
@@ -942,6 +994,38 @@ void MT9F002::calculateResolution(void) {
 void MT9F002::setOutput(uint16_t width, uint16_t height) {
     assert(width%2 == 0);
     assert(height%2 == 0);
+
+    res_config.output_width = width;
+    res_config.output_height = height;
+
+    // Calculate new configuration
+    calculateResolution();
+    calculateBlanking();
+
+    CLOGGER_DEBUG("Set MT9F002 output (output: " << res_config.output_width << "x" << res_config.output_height << ", offsets: " << res_config.offset_x << "," << res_config.offset_y << ", odd_inc:" << res_config.x_odd_inc << "," << res_config.y_odd_inc << ", scaler: " << res_config.output_scaler << ")");
+
+    // Write the new configuration
+    writeResolution();
+    writeBlanking();
+    writeExposure();
+}
+
+void MT9F002::setCrop(uint32_t left, uint32_t top, uint32_t width, uint32_t height) {
+    res_config.offset_x = left;
+    res_config.offset_y = top;
+    res_config.sensor_width = width;
+    res_config.sensor_height = height;
+
+    // Calculate new configuration
+    calculateResolution();
+    calculateBlanking();
+
+    CLOGGER_DEBUG("Set MT9F002 output (output: " << res_config.output_width << "x" << res_config.output_height << ", offsets: " << res_config.offset_x << "," << res_config.offset_y << ", odd_inc:" << res_config.x_odd_inc << "," << res_config.y_odd_inc << ", scaler: " << res_config.output_scaler << ")");
+
+    // Write the new configuration
+    writeResolution();
+    writeBlanking();
+    writeExposure();
 }
 
 /**

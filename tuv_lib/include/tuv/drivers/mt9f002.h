@@ -55,8 +55,8 @@ class MT9F002 {
         float output_scaler;                ///< Output scaler
         uint16_t sensor_width;              ///< Sensor width
         uint16_t sensor_height;             ///< Sensor height
-        uint8_t x_odd_inc;                  ///< Skipping in x direction
-        uint8_t y_odd_inc;                  ///< Skipping in y direction
+        uint16_t x_odd_inc;                 ///< Skipping in x direction
+        uint16_t y_odd_inc;                 ///< Skipping in y direction
     };
 
     /** Blanking configuration */
@@ -104,6 +104,7 @@ class MT9F002 {
     void writeRegister(uint16_t address, uint32_t value, uint8_t length);
     uint32_t readRegister(uint16_t address, uint8_t length);
     uint16_t calculateGain(float gain);
+    void calculateBlanking(void);
     void calculateResolution(void);
 
     void mipiHispiStage1(void);

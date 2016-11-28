@@ -105,6 +105,10 @@ void CamBebop::setOutput(enum Image::pixel_formats format, uint32_t width, uint3
  * @param[in] height The output height in pixels
  */
 void CamBebop::setCrop(uint32_t left, uint32_t top, uint32_t width, uint32_t height) {
+    // Update the camera settings
+    mt9f002.setCrop(left, top, width, height);
+
+    // Save the crop for the ISP configuration
     crop_left = left;
     crop_top = top;
     crop_width = width;

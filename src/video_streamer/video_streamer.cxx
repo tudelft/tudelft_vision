@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
 
   Cam::Ptr cam = target.getCamera(CAMERA_ID);
   cam->setOutput(Image::FMT_YUYV, 1088, 1920);
-  cam->setCrop(0, 0, 1088, 1920);
+  cam->setCrop(114 + 2300, 106 + 500, 1088, 1920);
   encoder.setInput(cam, EncoderH264::ROTATE_90L);
   encoder.start();
 
