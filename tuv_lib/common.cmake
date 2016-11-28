@@ -9,6 +9,7 @@ if (NOT DEFINED PLATFORM)
     endif ()
 endif (NOT DEFINED PLATFORM)
 add_definitions(-DPLATFORM=${PLATFORM})
+add_definitions(-DPLATFORM_${PLATFORM}=true)
 
 # Define the platform configuration file
 string(TOLOWER ${PLATFORM} PLATFORM_CONFIG)

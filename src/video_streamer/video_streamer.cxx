@@ -27,9 +27,8 @@
 int main(int argc, char *argv[])
 {
   PLATFORM target;
-#if TARGET == Bebop
+#if defined(PLATFORM_Bebop)
   EncoderH264 encoder(1920, 1088, 30, 4000000);
-  //EncoderJPEG encoder_jpeg;
 #else
   EncoderJPEG encoder;
 #endif
@@ -39,6 +38,8 @@ int main(int argc, char *argv[])
   Cam::Ptr cam = target.getCamera(CAMERA_ID);
   cam->setOutput(Image::FMT_YUYV, 1088, 1920);
   cam->setCrop(114 + 2300, 106 + 500, 1088, 1920);
+
+#if defined(PLATFORM_Bebop)
   encoder.setInput(cam, EncoderH264::ROTATE_90L);
   encoder.start();
 
@@ -46,26 +47,26 @@ int main(int argc, char *argv[])
   std::vector<uint8_t> sps = encoder.getSPS();
   std::vector<uint8_t> pps = encoder.getPPS();
   rtp.setSPSPPS(sps, pps);
+#endif
 
   cam->start();
   uint32_t i = 0;
   while(true) {
     Image::Ptr img = cam->getImage();
     Image::Ptr enc_img = encoder.encode(img);
-
-    //img->downsample(4);
-    //Image::Ptr jpeg_img = encoder_jpeg.encode(img);
     rtp.encode(enc_img);
-    //usleep(200000);
 
+#if defined(PLATFORM_Bebop)
     fwrite(sps.data(), sps.size(), 1, fp);
     fwrite(pps.data(), pps.size(), 1, fp);
     fwrite((uint8_t *)enc_img->getData(), enc_img->getSize(), 1, fp);
-
-    /*std::string test = "out" + std::to_string(i) + ".jpg";
+#else
+    std::string test = "out" + std::to_string(i) + ".jpg";
     FILE *fp = fopen(test.c_str(), "w");
-    fwrite((uint8_t *)jpeg_img->getData(), jpeg_img->getSize(), 1, fp);
-    fclose(fp);*/
+    fwrite((uint8_t *)enc_img->getData(), enc_img->getSize(), 1, fp);
+    fclose(fp);
+#endif
+
     ++i;
     i = i %20;
   }
