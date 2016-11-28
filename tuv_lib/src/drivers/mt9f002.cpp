@@ -975,8 +975,8 @@ float MT9F002::getTargetExposure(void) {
 void MT9F002::setExposure(float exposure) {
     assert(exposure > 0);
     target_exposure = exposure;
-    CLOGGER_DEBUG("Setting exposure: " << exposure);
 
+    CLOGGER_DEBUG("Setting exposure: " << exposure);
     writeExposure();
 }
 
@@ -998,7 +998,7 @@ struct MT9F002::gain_config_t MT9F002::getGains(void) {
  */
 void MT9F002::setGains(struct gain_config_t gains) {
     gain_config = gains;
-    CLOGGER_DEBUG("Setting gains: " << gains.blue << ", " << gains.red);
 
+    CLOGGER_DEBUG("Setting gains: " << gains.blue << ", " << gains.red);
     writeGains();
 }

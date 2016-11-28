@@ -36,6 +36,14 @@ class CamBebop: public CamLinux {
     struct MT9F002::pll_config_t pll_config;    ///< PLL configuration for the MT9F002
     MT9F002 mt9f002;                            ///< MT9F002 driver
     ISP isp;                                    ///< ISP driver
+    uint32_t crop_left;                         ///< Cropping left offset
+    uint32_t crop_top;                          ///< Cropping top offset
+    uint32_t crop_width;                        ///< Cropping width
+    uint32_t crop_height;                       ///< Cropping height
+
+    /* Helper functions */
+    void autoExposure(struct ISP::statistics_t &stats);
+    void autoWhiteBalance(struct ISP::statistics_t &stats);
 
   public:
     CamBebop(void);
