@@ -1,20 +1,38 @@
-.. TU Delft Vision Library documentation master file, created by
-   sphinx-quickstart on Mon Dec 12 16:50:27 2016.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
-Welcome to TU Delft Vision Library's documentation!
-===================================================
-
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :hidden:
+
+   paparazzi
+
+=======================
+TU Delft Vision Library
+=======================
+
+What is the Vision Library?
+===========================
+
+The TU Delft Vision Library allows computer vision developers to have a single codebase for the vision programs
+and deploy on multiple platforms with ease. Possible usages of the library could be in the field of autonomous
+UAV development. The library handles the communication with the camera as well as encoding and networking of the
+video frames.
 
 
+Features
+========
 
-Indices and tables
-==================
+* Support for Linux and the `Parrot Bebop <http://www.parrot.com/>`_ platform
+* JPEG and H264 encoding
+* Streaming via Real-time Transport Protocol (RTP)
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+
+Application
+============
+
+An example of utilizing the Vision Library is shown in the next video. The Parrot Bebop drone runs an autopilot system
+comprised of the Vision Library and `Paparazzi UAV <http://wiki.paparazziuav.org/>`_.
+
+
+.. raw:: html
+
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/y7svb4qPvT8" frameborder="0" allowfullscreen>
+    </iframe>
