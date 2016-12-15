@@ -22,7 +22,7 @@ video frames.
 Features
 ========
 
-* Support for Linux and the `Parrot Bebop <http://www.parrot.com/>`_ platform
+* Support for Linux and the :doc:`Parrot Bebop </bebop>` platform
 * JPEG and H264 encoding
 * Streaming via Real-time Transport Protocol (RTP)
 
