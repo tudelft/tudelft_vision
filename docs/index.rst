@@ -31,7 +31,7 @@ Application
 ============
 
 An example of utilizing the Vision Library is shown in the next video. The Parrot Bebop drone runs an autopilot system
-comprised of the Vision Library and `Paparazzi UAV <http://wiki.paparazziuav.org/>`_.
+comprised of the Vision Library and :doc:`Paparazzi UAV </paparazzi>`.
 
 
 .. raw:: html
