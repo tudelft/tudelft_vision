@@ -2,7 +2,9 @@
    :maxdepth: 2
    :hidden:
 
+   self
    paparazzi
+   bebop
 
 =======================
 TU Delft Vision Library
