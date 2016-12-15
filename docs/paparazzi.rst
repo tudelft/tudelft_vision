@@ -7,6 +7,9 @@ Getting started with Paparazzi
 What is Paparazzi?
 ==================
 
+.. image:: _static/paparazzi.gif
+   :align: right
+
 Summarized from the `Paparazzi wiki <http://wiki.paparazziuav.org/>`__:
 
     '*Paparazzi is an open-source drone hardware and software project encompassing autopilot systems and ground station
