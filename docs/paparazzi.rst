@@ -3,6 +3,7 @@
 Getting started with Paparazzi
 ==============================
 
+
 What is Paparazzi?
 ==================
 
@@ -16,6 +17,7 @@ Paparazzi is the recommended platform to implement computer vision behavior in d
 Vision Library deals with the computer vision related hardware, Paparazzi is a complete airborne system and can be used
 to (autonomously) operate almost any airframe. An example of such an airframe is the :doc:`Parrot Bebop </bebop>`.
 
+
 Where to start
 ===============
 
@@ -28,6 +30,7 @@ for details on how to install Paparazzi on other platforms.
     Are you familiar with Git version control? Paparazzi is updated `regularly <https://github.com/paparazzi/paparazzi/pulse>`__
     and merging your work with others can be complicated. A human-readable introduction to Git can be found
     `here <https://red-badger.com/blog/2016/11/29/gitgithub-in-plain-english>`__. The offical book is hosted `here <https://git-scm.com/book>`__.
+
 
 Video tutorial
 ==============
@@ -44,6 +47,7 @@ It has been verified to work with Ubuntu 12.04 and up, including the latest 16.0
             style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
         </iframe>
     </div>
+
 
 Ubuntu installation
 ===================
@@ -73,4 +77,11 @@ Change directory to Paparazzi and checkout the `latest release <https://github.c
 You can now launch the Paparazzi Center::
 
     ./paparazzi
+
+
+Resources
+=========
+
+* The `wiki <http://wiki.paparazziuav.org/wiki>`__ contains a sea of information
+* Real-time developer chat via `Gitter <https://gitter.im/paparazzi/discuss>`__
 
