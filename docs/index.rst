@@ -5,6 +5,7 @@
    self
    paparazzi
    bebop
+   api
 
 =======================
 TU Delft Vision Library
