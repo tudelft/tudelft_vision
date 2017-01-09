@@ -2,7 +2,7 @@
    :maxdepth: 2
    :hidden:
 
-   self
+   Introduction <self>
    paparazzi
    bebop
    api
@@ -29,7 +29,7 @@ Features
 
 
 Application
-============
+===========
 
 An example of utilizing the Vision Library is shown in the next video. The Parrot Bebop drone runs an autopilot system
 comprised of the Vision Library and :doc:`Paparazzi UAV </paparazzi>`.
@@ -44,3 +44,28 @@ comprised of the Vision Library and :doc:`Paparazzi UAV </paparazzi>`.
             style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
         </iframe>
     </div>
+
+
+Requirements
+============
+
+In order to build the vision projects you will need:
+
+* CMake 2.8+
+* GCC or clang (with C++11 support)
+* libjpeg (optional)
+* `linuxgnutools <https://github.com/tudelft/toolchains>`__ (modified cross-compiler for the bebop platform)
+
+
+Build instructions
+==================
+
+Create a build directory and run cmake::
+
+   mkdir build && cd build
+   cmake ../
+
+The projects can be compiled with the generated Makefile::
+
+   make
+
