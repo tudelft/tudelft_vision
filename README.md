@@ -1,4 +1,4 @@
-# TU Delft Vision
+# TU Delft Vision [![Build Status](https://travis-ci.org/tudelft/tudelft_vision.png?branch=master)](https://travis-ci.org/tudelft/tudelft_vision)
 This is a project which contains several projects and programs using the TUV Library. The aim of this project is to make as much vision programs compatible for multiple platforms. This is done by using the TUV Library which abstracts most of the platform features and capabilities.
 
 ## Directory structure
