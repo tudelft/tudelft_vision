@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
 {
   PLATFORM target;
 #if defined(PLATFORM_Bebop)
-  EncoderH264 encoder(1920, 1080, 30, 4000000);
+  EncoderH264 encoder(320, 240, 30, 4000000);
 #else
   EncoderJPEG encoder;
 #endif
@@ -36,11 +36,11 @@ int main(int argc, char *argv[])
   EncoderRTP rtp(udp);
 
   Cam::Ptr cam = target.getCamera(CAMERA_ID);
-  cam->setOutput(Image::FMT_YUYV, 1088, 1920);
-  cam->setCrop(114 + 2300, 106 + 500, 1088, 1920);
+  cam->setOutput(Image::FMT_YUYV, 320, 240);
+  //cam->setCrop(114 + 2300, 106 + 500, 1088, 1920);
 
 #if defined(PLATFORM_Bebop)
-  encoder.setInput(cam, EncoderH264::ROTATE_90L);
+  encoder.setInput(cam);
   encoder.start();
 
   FILE *fp = fopen("video.h264", "w");

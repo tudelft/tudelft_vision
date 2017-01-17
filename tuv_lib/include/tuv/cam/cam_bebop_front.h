@@ -15,8 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CAM_BEBOP_H_
-#define CAM_BEBOP_H_
+#ifndef CAM_BEBOP_FRONT_H_
+#define CAM_BEBOP_FRONT_H_
 
 #include <tuv/cam/cam_linux.h>
 #include <tuv/drivers/i2cbus.h>
@@ -27,10 +27,10 @@
 /**
  * @brief Bebop Front Camera
  *
- * This is a full driver for the Bebop front camera. It is baed on the Linux camera and extends it
+ * This is a full driver for the Bebop front camera. It is based on the Linux camera and extends it
  * by configurations for the MT9F002 CMOS chipset and ISP.
  */
-class CamBebop: public CamLinux {
+class CamBebopFront: public CamLinux {
   private:
     I2CBus i2c_bus;                             ///< The I2C bus connection on which the MT9F002 is connected
     struct MT9F002::pll_config_t pll_config;    ///< PLL configuration for the MT9F002
@@ -46,7 +46,7 @@ class CamBebop: public CamLinux {
     void autoWhiteBalance(struct ISP::statistics_t &stats);
 
   public:
-    CamBebop(void);
+    CamBebopFront(void);
 
     void start(void);
     Image::Ptr getImage(void);
@@ -54,4 +54,4 @@ class CamBebop: public CamLinux {
     void setCrop(uint32_t left, uint32_t top, uint32_t width, uint32_t height);
 };
 
-#endif /* CAM_BEBOP_H_ */
+#endif /* CAM_BEBOP_FRONT_H_ */

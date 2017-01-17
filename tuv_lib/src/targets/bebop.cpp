@@ -18,7 +18,8 @@
 #include "targets/bebop.h"
 
 #include "drivers/clogger.h"
-#include "cam/cam_bebop.h"
+#include "cam/cam_bebop_front.h"
+#include "cam/cam_bebop_bottom.h"
 #include <string>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -76,10 +77,14 @@ Cam::Ptr Bebop::getCamera(uint32_t id) {
     /* Create the bebop camera if possible */
     if(cam == nullptr) {
         switch(id) {
+        // Bebop bottom camera
+        case 0:
+            cam = std::make_shared<CamBebopBottom>();
+            break;
+
         // Bebop front camera
         case 1:
-            cam = std::make_shared<CamBebop>();
-            cams.push_back(std::make_pair(id, cam));
+            cam = std::make_shared<CamBebopFront>();
             break;
 
         // Create Linux camera by default
@@ -87,6 +92,8 @@ Cam::Ptr Bebop::getCamera(uint32_t id) {
             cam = std::make_shared<CamLinux>("/dev/video" + std::to_string(id));
             break;
         }
+
+        cams.push_back(std::make_pair(id, cam));
     }
 
     return cam;

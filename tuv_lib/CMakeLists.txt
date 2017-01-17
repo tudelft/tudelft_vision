@@ -19,9 +19,11 @@ file(GLOB SRCS_LINUX
     "src/cam/cam_linux.cpp"
     "src/drivers/i2cbus.cpp"
     "src/drivers/mt9f002.cpp"
+    "src/drivers/mt9v117.cpp"
     "src/targets/linux.cpp")
 file(GLOB SRCS_BEBOP
-    "src/cam/cam_bebop.cpp"
+    "src/cam/cam_bebop_front.cpp"
+    "src/cam/cam_bebop_bottom.cpp"
     "src/drivers/isp.cpp"
     "src/encoding/encoder_h264.cpp"
     "src/vision/image_h264.cpp"

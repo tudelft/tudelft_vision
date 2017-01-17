@@ -21,7 +21,7 @@
 #include <tuv/drivers/i2cbus.h>
 
 /**
- * Driver for the MT9F002 CMOS Chipset
+ * Driver for the Aptina MT9F002 CMOS Chipset
  */
 class MT9F002 {
   public:

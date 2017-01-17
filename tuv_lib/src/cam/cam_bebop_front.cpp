@@ -15,7 +15,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "cam/cam_bebop.h"
+#include "cam/cam_bebop_front.h"
 
 #include "drivers/clogger.h"
 #include "drivers/isp.h"
@@ -28,7 +28,7 @@
  *
  * This will setup the Linux camera, I2C-bus communication, PLL configuration and MT9F002 driver.
  */
-CamBebop::CamBebop(void) : CamLinux("/dev/video1"),
+CamBebopFront::CamBebopFront(void) : CamLinux("/dev/video1"),
     i2c_bus("/dev/i2c-0"),
     pll_config{(26 / 2), 7, 1, 1, 59, 8, 1, 1, 1, 1},
     mt9f002(&i2c_bus, MT9F002::PARALLEL, pll_config) {
@@ -40,7 +40,7 @@ CamBebop::CamBebop(void) : CamLinux("/dev/video1"),
  *
  * First this will start the V4L2 linux camera and then it will configure the ISP.
  */
-void CamBebop::start(void) {
+void CamBebopFront::start(void) {
     // Start the camera
     CamLinux::start();
 
@@ -55,7 +55,7 @@ void CamBebop::start(void) {
  * Get a new image from the front camera.
  * @return The image
  */
-Image::Ptr CamBebop::getImage(void) {
+Image::Ptr CamBebopFront::getImage(void) {
     Image::Ptr img = CamLinux::getImage();
     struct ISP::statistics_t stats = isp.getYUVStatistics();
 
@@ -79,7 +79,7 @@ Image::Ptr CamBebop::getImage(void) {
  * @param[in] width The requested output width
  * @param[in] height The requested output height
  */
-void CamBebop::setOutput(enum Image::pixel_formats format, uint32_t width, uint32_t height) {
+void CamBebopFront::setOutput(enum Image::pixel_formats format, uint32_t width, uint32_t height) {
     // Set the camera sensor size
     mt9f002.setOutput(width, height);
 
@@ -104,7 +104,7 @@ void CamBebop::setOutput(enum Image::pixel_formats format, uint32_t width, uint3
  * @param[in] width The output width in pixels
  * @param[in] height The output height in pixels
  */
-void CamBebop::setCrop(uint32_t left, uint32_t top, uint32_t width, uint32_t height) {
+void CamBebopFront::setCrop(uint32_t left, uint32_t top, uint32_t width, uint32_t height) {
     // Update the camera settings
     mt9f002.setCrop(left, top, width, height);
 
@@ -122,7 +122,7 @@ void CamBebop::setCrop(uint32_t left, uint32_t top, uint32_t width, uint32_t hei
  * of the MT9F002 chip accordingly.
  * @param stats The ISP YUV statistics
  */
-void CamBebop::autoExposure(struct ISP::statistics_t &stats) {
+void CamBebopFront::autoExposure(struct ISP::statistics_t &stats) {
     #define MAX_HIST_Y 235
     // Auto exposure
     uint32_t cdf[256];
@@ -175,7 +175,7 @@ void CamBebop::autoExposure(struct ISP::statistics_t &stats) {
  * and update the MT9F002 color gains accordingly.
  * @param stats The ISP statistics
  */
-void CamBebop::autoWhiteBalance(struct ISP::statistics_t &stats) {
+void CamBebopFront::autoWhiteBalance(struct ISP::statistics_t &stats) {
     // Calculate AWB
     struct MT9F002::gain_config_t gains = mt9f002.getGains();
     float avgU = ((float) stats.awb_sum[1] / (float) stats.nb_grey) / 240. - 0.5;

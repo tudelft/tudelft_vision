@@ -19,3 +19,10 @@ foreach(project ${PROJECTS})
     MESSAGE( STATUS "Found project:                  " ${project} )
     add_subdirectory(src/${project})
 endforeach(project)
+
+if (PLATFORM STREQUAL Bebop)
+    add_custom_target(upload
+     COMMAND adb push ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} /data/ftp/internal_000/paparazzi/)
+    add_custom_target(connect
+     COMMAND adb connect 192.168.42.1:9050)
+endif ()
