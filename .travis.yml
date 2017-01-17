@@ -21,7 +21,7 @@ before_install:
 install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -qq libc6:i386; fi
 before_script:
-  - if [ "$TOOLCHAIN" = "bebop" ]; then wget -c https://github.com/tudelft/toolchains/raw/master/parrot-tools-linuxgnutools-2012.03_1.0.0-2_i386.deb && sudo dpkg -i parrot-tools-linuxgnutools-2012.03_1.0.0-2_i386.deb; fi
+  - if [ "$TOOLCHAIN" = "bebop" ]; then wget -c https://github.com/tudelft/toolchains/raw/master/parrot-tools-linuxgnutools-2012.03_1.0.0-3_i386.deb && sudo dpkg -i parrot-tools-linuxgnutools-2012.03_1.0.0-3_i386.deb; fi
   - mkdir build && cd build
   - if [ -n "$TOOLCHAIN" ]; then export TOOLCHAIN_ARG="-DCMAKE_TOOLCHAIN_FILE=toolchains/$TOOLCHAIN-toolchain.cmake"; fi
   - cmake ../ -DCMAKE_BUILD_TYPE=$BUILD_TYPE $TOOLCHAIN_ARG

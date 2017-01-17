@@ -23,6 +23,9 @@
 #include <unistd.h>
 #include <iostream>
 #include <fstream>
+#include <opencv2/opencv.hpp>
+
+using namespace cv;
 
 int main(int argc, char *argv[])
 {
@@ -53,6 +56,18 @@ int main(int argc, char *argv[])
   uint32_t i = 0;
   while(true) {
     Image::Ptr img = cam->getImage();
+
+    // Convert to OpenCV matrix
+    Mat M(img->getHeight(), img->getWidth(), CV_8UC2, img->getData());
+    Mat image;
+    cvtColor(M, image, CV_YUV2BGR_Y422); // cvtColor(M, image, CV_YUV2GRAY_Y422);
+
+    // Blur for now
+    blur(image, image, Size(5, 5));
+
+
+    // Start encoding
+    //colorrgb_opencv_to_yuv422(image, img->getData(), img->getWidth(), img->getHeight());
     Image::Ptr enc_img = encoder.encode(img);
     rtp.encode(enc_img);
 
