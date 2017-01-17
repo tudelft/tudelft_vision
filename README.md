@@ -24,3 +24,11 @@ For building the projects you at least need:
 For certain programs or platforms you are required to install:
 - libjpeg
 - linuxgnutools from Parrot (As cross-compiler for the Bebop platform)
+
+## How to build documentation
+```
+pip install sphinx
+pip install recommonmark
+cd docs
+make html
+```
