@@ -3,8 +3,7 @@ project (opticflow CXX)
 
 set(SUPPORTED_PLATFORMS "Bebop")
 
-if (";${SUPPORTED_PLATFORMS};" MATCHES ";${PLATFORM};")
-    find_package( OpenCV REQUIRED )
+if ((";${SUPPORTED_PLATFORMS};" MATCHES ";${PLATFORM};") AND OpenCV_FOUND)
     add_executable(${PROJECT_NAME} opticflow.cxx)
     add_custom_target(${PROJECT_NAME}_headers SOURCES ${PLATFORM_CONFIG})
     target_link_libraries(${PROJECT_NAME} tuv ${OpenCV_LIBS})

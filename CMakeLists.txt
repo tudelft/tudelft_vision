@@ -14,6 +14,9 @@ include(tuv_lib/common.cmake)
 MESSAGE( STATUS "Compiling for platform:         " ${PLATFORM} )
 MESSAGE( STATUS "Build type:                     " ${CMAKE_BUILD_TYPE} )
 
+# Find OpenCV 2.4.13 (optional)
+find_package(OpenCV 2.4.13 QUIET)
+
 # Add the projects
 foreach(project ${PROJECTS})
     MESSAGE( STATUS "Found project:                  " ${project} )
