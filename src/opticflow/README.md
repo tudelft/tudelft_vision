@@ -1,5 +1,7 @@
-# Video Streamer
-This is a simple video streamer over UDP. It uses RTP encoding and uses either H264 or JPEG based on availability. For the Linux target JPEG software encoding is used and for the Bebop H264 Hardware encoding is used.
+# Opticflow
+Optical flow calculations specially designed for the Bebop based on opencv 2.4.13. It can also run on Linux for debugging purposes. For the Bebop it is required to have the correct cross-compiler installed(See the main repository repository for installation instructions).
+
+It is designed to communicate to autopilot software and currently support the Paparazzi Autopilot.
 
 ## Supported platforms
 - Linux
