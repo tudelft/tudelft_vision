@@ -123,7 +123,7 @@ void CamBebopFront::setCrop(uint32_t left, uint32_t top, uint32_t width, uint32_
  * @param stats The ISP YUV statistics
  */
 void CamBebopFront::autoExposure(struct ISP::statistics_t &stats) {
-    #define MAX_HIST_Y 235
+#define MAX_HIST_Y 235
     // Auto exposure
     uint32_t cdf[256];
     cdf[0] = stats.hist_y[0];

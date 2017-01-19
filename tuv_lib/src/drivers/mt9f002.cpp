@@ -912,8 +912,7 @@ int MT9F002::gcd(int a, int b) {
 void MT9F002::calculateBlanking(void) {
     // Set the correct blanking minimum
     if (res_config.x_odd_inc > 1) {
-        if (res_config.y_odd_inc > 1)
-        {
+        if (res_config.y_odd_inc > 1) {
             /* Binning XY */
             blank_config.min_line_blanking_pck 				= 2950;
             blank_config.min_line_length_pck 				= 4650;
@@ -969,9 +968,9 @@ void MT9F002::calculateResolution(void) {
 
     // Calculate remaining scaling not handled by binning / skipping
     float hratio = ((res_config.sensor_width / ((res_config.x_odd_inc + 1) / 2) * MT9F002_SCALER_N) + res_config.output_width - 1) /
-         res_config.output_width;
+                   res_config.output_width;
     float vratio = ((res_config.sensor_height / ((res_config.y_odd_inc + 1) / 2) * MT9F002_SCALER_N) + res_config.output_height -
-          1) / res_config.output_height;
+                    1) / res_config.output_height;
     float ratio = std::min(hratio, vratio);
 
     if(ratio > MT9F002_SCALER_M_MAX_VAL) {

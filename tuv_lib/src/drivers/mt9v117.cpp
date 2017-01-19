@@ -45,7 +45,7 @@ MT9V117::MT9V117(I2CBus *i2c_bus) {
     close(gpio129);
 
     if (wc != 2) {
-      CLOGGER_WARN("MT9V117 couldn't write to GPIO 129");
+        CLOGGER_WARN("MT9V117 couldn't write to GPIO 129");
     }
 
     /* Start PWM 9 (Which probably is the clock of the MT9V117) */
@@ -56,7 +56,7 @@ MT9V117::MT9V117(I2CBus *i2c_bus) {
     close(pwm9);
 
     if (wc != 2) {
-      CLOGGER_WARN("MT9V117 couldn't write to PWM");
+        CLOGGER_WARN("MT9V117 couldn't write to PWM");
     }
 
     /* Wait 50ms */
@@ -65,7 +65,7 @@ MT9V117::MT9V117(I2CBus *i2c_bus) {
     /* See if the device is there and correct */
     uint16_t chip_id = readRegister(MT9V117_CHIP_ID, 2);
     if(chip_id != MT9V117_CHIP_ID_RESP) {
-      throw std::runtime_error("[MT9V117] Didn't get correct response from CHIP_ID (expected: " + std::to_string(MT9V117_CHIP_ID_RESP) + ", got: " + std::to_string(chip_id) + ")");
+        throw std::runtime_error("[MT9V117] Didn't get correct response from CHIP_ID (expected: " + std::to_string(MT9V117_CHIP_ID_RESP) + ", got: " + std::to_string(chip_id) + ")");
     }
 
     /* Reset the device with software */
@@ -90,8 +90,8 @@ MT9V117::MT9V117(I2CBus *i2c_bus) {
 
     /* Enable ITU656 */
     writeVar(MT9V117_CAM_CTRL_VAR, MT9V117_CAM_OUTPUT_FORMAT_OFFSET,
-                   readVar(MT9V117_CAM_CTRL_VAR, MT9V117_CAM_OUTPUT_FORMAT_OFFSET, 2) |
-                   MT9V117_CAM_OUTPUT_FORMAT_BT656_ENABLE, 2);
+             readVar(MT9V117_CAM_CTRL_VAR, MT9V117_CAM_OUTPUT_FORMAT_OFFSET, 2) |
+             MT9V117_CAM_OUTPUT_FORMAT_BT656_ENABLE, 2);
 
     /* Apply the configuration */
     writeVar(MT9V117_SYSMGR_VAR, MT9V117_SYSMGR_NEXT_STATE_OFFSET, MT9V117_SYS_STATE_ENTER_CONFIG_CHANGE, 1);
@@ -99,19 +99,19 @@ MT9V117::MT9V117(I2CBus *i2c_bus) {
 
     /* Wait for command OK */
     for(uint8_t retries = 100; retries > 0; retries--) {
-      /* Wait 10ms */
-      usleep(10000);
+        /* Wait 10ms */
+        usleep(10000);
 
-      /* Check the command */
-      uint16_t cmd = readRegister(MT9V117_COMMAND, 2);
-      if((cmd & MT9V117_COMMAND_SET_STATE) == 0) {
-        if((cmd & MT9V117_COMMAND_OK) == 0) {
-          CLOGGER_WARN("Switching MT9V117 config failed (No OK)");
+        /* Check the command */
+        uint16_t cmd = readRegister(MT9V117_COMMAND, 2);
+        if((cmd & MT9V117_COMMAND_SET_STATE) == 0) {
+            if((cmd & MT9V117_COMMAND_OK) == 0) {
+                CLOGGER_WARN("Switching MT9V117 config failed (No OK)");
+            }
+
+            // Successfully configured!
+            return;
         }
-
-        // Successfully configured!
-        return;
-      }
     }
 
     CLOGGER_WARN("Could not switch MT9V117 to new config after 100 tries.");
@@ -365,25 +365,25 @@ void MT9V117::writeConfig(void) {
     writeVar(MT9V117_CAM_CTRL_VAR, MT9V117_CAM_SENSOR_CONTROL_READ_MODE_OFFSET, MT9V117_CAM_SENSOR_CONTROL_Y_SKIP_EN, 2);
     writeVar(MT9V117_CAM_CTRL_VAR, MT9V117_CAM_SENSOR_CFG_MAX_FDZONE_60_OFFSET, 1, 2);
     writeVar(MT9V117_CAM_CTRL_VAR, MT9V117_CAM_SENSOR_CFG_TARGET_FDZONE_60_OFFSET, 1, 2);
-  
+
     writeRegister(MT9V117_AE_TRACK_JUMP_DIVISOR, 0x03, 1);
     writeRegister(MT9V117_CAM_AET_SKIP_FRAMES, 0x02, 1);
-  
+
     writeVar(MT9V117_CAM_CTRL_VAR, MT9V117_CAM_OUTPUT_WIDTH_OFFSET, 320, 2);
     writeVar(MT9V117_CAM_CTRL_VAR, MT9V117_CAM_OUTPUT_HEIGHT_OFFSET, 240, 2);
-  
+
     /* Set gain metric for 111.2 fps
      * The final fps depends on the input clock
      * (89.2fps on bebop) so a modification may be needed here */
     writeVar(MT9V117_CAM_CTRL_VAR, MT9V117_CAM_LL_START_GAIN_METRIC_OFFSET, 0x03e8, 2);
     writeVar(MT9V117_CAM_CTRL_VAR, MT9V117_CAM_LL_STOP_GAIN_METRIC_OFFSET, 0x1770, 2);
-  
+
     /* set crop window */
     writeVar(MT9V117_CAM_CTRL_VAR, MT9V117_CAM_CROP_WINDOW_XOFFSET_OFFSET, 0, 2);
     writeVar(MT9V117_CAM_CTRL_VAR, MT9V117_CAM_CROP_WINDOW_YOFFSET_OFFSET, 0, 2);
     writeVar(MT9V117_CAM_CTRL_VAR, MT9V117_CAM_CROP_WINDOW_WIDTH_OFFSET, 640, 2);
     writeVar(MT9V117_CAM_CTRL_VAR, MT9V117_CAM_CROP_WINDOW_HEIGHT_OFFSET, 240, 2);
-  
+
     /* Enable auto-stats mode */
     writeVar(MT9V117_CAM_CTRL_VAR, MT9V117_CAM_CROP_MODE_OFFSET, 3, 1);
     writeVar(MT9V117_CAM_CTRL_VAR, MT9V117_CAM_STAT_AWB_HG_WINDOW_XEND_OFFSET, 319, 2);
