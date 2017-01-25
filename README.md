@@ -26,10 +26,8 @@ For certain programs or platforms you are required to install:
 - linuxgnutools from Parrot (As cross-compiler for the Bebop platform)
 
 ## How to build documentation
+python package dependencies in requirements.txt
 ```
-pip install sphinx
-pip install recommonmark
-pip install breathe
 (cd tuv_lib && doxygen)
 (cd docs && make html)
 ```
