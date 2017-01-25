@@ -29,6 +29,7 @@ For certain programs or platforms you are required to install:
 ```
 pip install sphinx
 pip install recommonmark
-cd docs
-make html
+pip install breathe
+(cd tuv_lib && doxygen)
+(cd docs && make html)
 ```
