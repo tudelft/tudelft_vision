@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
 
   Cam::Ptr cam = target.getCamera(CAMERA_ID);
   cam->setOutput(Image::FMT_YUYV, 320, 240);
-  //cam->setCrop(114 + 2300, 106 + 500, 1088, 1920);
+  cam->setCrop(0, 0, 240, 240);
 
 #if defined(PLATFORM_Bebop)
   encoder.setInput(cam);
