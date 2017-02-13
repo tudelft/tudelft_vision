@@ -61,6 +61,10 @@ int main(int argc, char *argv[])
   cv::Mat prevFrame(64, 64, CV_8UC1);
   cv::Mat currFrame(64, 64, CV_8UC1);
   std::vector<cv::Point2f> prevPts, currPts;
+  std::vector<cv::KeyPoint> features;
+
+  int threshold = 20;
+  const int minThreshold = 5, maxThreshold = 200, targetCount = 10;
 
   auto start = std::chrono::monotonic_clock::now();
 
@@ -78,8 +82,17 @@ int main(int argc, char *argv[])
     // Resize camera image to a 64x64 frame (< 1 ms)
     cv::resize(camGray, currFrame, currFrame.size(), 0, 0, cv::INTER_NEAREST);
 
-    // Find points in image (TODO: SLOW)
-    cv::goodFeaturesToTrack(prevFrame, prevPts, 20, 0.01, 5);
+    // Find points in image
+      cv::FAST(currFrame, features, threshold);
+      threshold += features.size() > targetCount ? 1 : -1;
+      threshold = std::min(std::max(threshold, minThreshold), maxThreshold);
+
+      std::cout << "threshold: " << threshold << std::endl;
+
+      if (features.size() > targetCount) {
+          features.erase(features.begin() + targetCount, features.end());
+      }
+      cv::KeyPoint::convert(features, prevPts);
 
     // If there are no points, continue to next frame
     if (prevPts.empty()) {
@@ -91,6 +104,7 @@ int main(int argc, char *argv[])
     std::vector<uchar> status;
     std::vector<float> err;
     cv::Point2f total;
+    currPts.clear(); // clear points to indicate that there are no estimates
     cv::calcOpticalFlowPyrLK(prevFrame, currFrame, prevPts, currPts, status, err, Size(5, 5), 0);
 
     // Sum all optical flow vectors
@@ -108,7 +122,7 @@ int main(int argc, char *argv[])
     if (k > 0) {
         cv::Point2f avg(total.x / k, total.y / k);
 
-//        std::cout << avg << std::endl;
+        std::cout << avg << std::endl;
     }
 
     // Swap buffer
