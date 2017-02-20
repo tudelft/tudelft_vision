@@ -33,7 +33,7 @@ from recommonmark.parser import CommonMarkParser
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.githubpages', 'breathe']
+extensions = ['breathe']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -53,7 +53,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'TU Delft Vision Library'
-copyright = '2016, TU Delft'
+copyright = '2017, TU Delft'
 author = 'TU Delft'
 
 # The version info for the project you're documenting, acts as replacement for
