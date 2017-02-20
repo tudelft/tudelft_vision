@@ -53,7 +53,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'TU Delft Vision Library'
-copyright = '2016, TU Delft'
+copyright = '2017, TU Delft'
 author = 'TU Delft'
 
 # The version info for the project you're documenting, acts as replacement for
