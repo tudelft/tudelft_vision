@@ -23,6 +23,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <fstream>
+#include <string>
 
 int main(int argc, char *argv[])
 {
@@ -32,7 +33,15 @@ int main(int argc, char *argv[])
 #else
   EncoderJPEG encoder;
 #endif
-  UDPSocket::Ptr udp = std::make_shared<UDPSocket>(UDP_TARGET, 5000);
+
+  // determine target from number of cmdline arguments
+  std::string udp_target = UDP_TARGET;
+  if (argc == 2) {
+    udp_target = std::string(argv[1]);
+  }
+  std::cout << "Target: " << udp_target << std::endl;
+
+  UDPSocket::Ptr udp = std::make_shared<UDPSocket>(udp_target, 5000);
   EncoderRTP rtp(udp);
 
   Cam::Ptr cam = target.getCamera(CAMERA_ID);
