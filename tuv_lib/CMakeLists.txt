@@ -61,7 +61,11 @@ file(REMOVE "include/tuv/tuv.h")
 file(GLOB_RECURSE HDRS_INC RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/include"  "include/*.h")
 
 foreach(filename ${HDRS_INC})
-    file(APPEND "include/tuv/tuv.h" "#include <${filename}>\r\n")
+    message(${filename})
+    if ("tuv/encoding/encoder_jpeg.h" STREQUAL ${filename} AND NOT ${JPEG_FOUND})
+    else()
+        file(APPEND "include/tuv/tuv.h" "#include <${filename}>\r\n")
+    endif()
 endforeach(filename)
 
 # Add headers target for Qt
