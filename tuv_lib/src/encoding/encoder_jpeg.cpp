@@ -49,7 +49,7 @@ boolean EncoderJPEG::emptyOutputBuffer(j_compress_ptr cinfo) {
     dst->data.resize(oldsize + BLOCK_SIZE);
     cinfo->dest->next_output_byte = &dst->data[oldsize];
     cinfo->dest->free_in_buffer = dst->data.size() - oldsize;
-    return true;
+    return TRUE;
 }
 
 /**
@@ -105,8 +105,8 @@ Image::Ptr EncoderJPEG::encode(Image::Ptr img) {
     cinfo.in_color_space = JCS_YCbCr;
 
     jpeg_set_defaults(&cinfo);
-    jpeg_set_quality(&cinfo, quality, true);
-    jpeg_start_compress(&cinfo, true);
+    jpeg_set_quality(&cinfo, quality, TRUE);
+    jpeg_start_compress(&cinfo, TRUE);
 
 
     uint8_t tmprowbuf[img->getWidth() * 3];
