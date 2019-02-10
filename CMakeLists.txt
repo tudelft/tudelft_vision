@@ -8,6 +8,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib") 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 
+# Link directory for libh1enc.so
+link_directories("${CMAKE_CURRENT_SOURCE_DIR}/vendor/lib")
+
 # Add the vision library
 add_subdirectory(tuv_lib)
 include(tuv_lib/common.cmake)
