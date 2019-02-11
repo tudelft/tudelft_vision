@@ -31,7 +31,7 @@
 #include <tuv/drivers/mt9v117_regs.h>
 #include <tuv/drivers/udpsocket.h>
 #include <tuv/encoding/encoder_h264.h>
-#ifdef JPEG_FOUND
+#ifdef INCLUDE_JPEG
 #include <tuv/encoding/encoder_jpeg.h>
 #endif
 #include <tuv/encoding/encoder_rtp.h>
