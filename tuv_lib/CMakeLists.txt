@@ -56,14 +56,6 @@ if (OpenCV_FOUND)
     set(LIBS ${LIBS} ${OpenCV_LIBS})
 endif (OpenCV_FOUND)
 
-# List all headers for the main headers file
-file(REMOVE "include/tuv/tuv.h")
-file(GLOB_RECURSE HDRS_INC RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/include"  "include/*.h")
-
-foreach(filename ${HDRS_INC})
-    file(APPEND "include/tuv/tuv.h" "#include <${filename}>\r\n")
-endforeach(filename)
-
 # Add headers target for Qt
 file(GLOB_RECURSE HDRS "include/*.h")
 add_custom_target(${PROJECT_NAME}_headers SOURCES ${HDRS})
