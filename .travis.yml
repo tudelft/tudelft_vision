@@ -9,12 +9,18 @@ env:
   - BUILD_TYPE=Debug
   - TOOLCHAIN=bebop BUILD_TYPE=Release
   - TOOLCHAIN=bebop BUILD_TYPE=Debug
+  - TOOLCHAIN=bebop2 BUILD_TYPE=Release
+  - TOOLCHAIN=bebop2 BUILD_TYPE=Debug
 matrix:
   exclude:
     - os: osx
       env: TOOLCHAIN=bebop BUILD_TYPE=Release
     - os: osx
       env: TOOLCHAIN=bebop BUILD_TYPE=Debug
+    - os: osx
+      env: TOOLCHAIN=bebop2 BUILD_TYPE=Release
+    - os: osx
+      env: TOOLCHAIN=bebop2 BUILD_TYPE=Debug
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo dpkg --add-architecture i386; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update -qq; fi
@@ -22,6 +28,7 @@ install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -qq libc6:i386; fi
 before_script:
   - if [ "$TOOLCHAIN" = "bebop" ]; then wget -c https://github.com/tudelft/toolchains/raw/master/parrot-tools-linuxgnutools-2012.03_1.0.0-3_i386.deb && sudo dpkg -i parrot-tools-linuxgnutools-2012.03_1.0.0-3_i386.deb; fi
+  - if [ "$TOOLCHAIN" = "bebop2" ]; then wget -c https://github.com/tudelft/toolchains/raw/master/parrot-tools-linuxgnutools-2016.02-linaro_1.0.0-2_amd64.deb && sudo dpkg -i parrot-tools-linuxgnutools-2016.02-linaro_1.0.0-2_amd64.deb; fi
   - mkdir build && cd build
   - if [ -n "$TOOLCHAIN" ]; then export TOOLCHAIN_ARG="-DCMAKE_TOOLCHAIN_FILE=toolchains/$TOOLCHAIN-toolchain.cmake"; fi
   - cmake ../ -DCMAKE_BUILD_TYPE=$BUILD_TYPE $TOOLCHAIN_ARG
